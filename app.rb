@@ -7,7 +7,6 @@ require_relative 'models/timemodel'
 require_relative 'models/edge'
 require_relative 'models/node'
 
-
 class App < Sinatra::Base
 	configure do 
 		set :public_folder, ENV['RACK_ENV'] == 'production' ? 'dist' : 'app'
@@ -16,10 +15,14 @@ class App < Sinatra::Base
 	end
 
 	get '/' do 
-		send_file File.join(File.read(settings.public_folder, 'index.html'))
+		File.read(File.join("public", 'index.html.erb'))
 	end
 
 	before '/server*' do
+		content_type :json
+	end
+
+	before '/timemodel*' do
 		content_type :json
 	end
 
@@ -37,7 +40,7 @@ class App < Sinatra::Base
 			:headers => {'Content-Type' => 'application/json'})
 
 		new_time = Timemodel.create 
-		new_time.update time: Time.new.to_i
+		new_time.update_attributes(time: Time.new.to_i)
 
 		json = JSON.parse(response.to_s().gsub('=>', ':'))
 
@@ -45,7 +48,7 @@ class App < Sinatra::Base
 		while json["Node"][$i] != nil do
 			new_node = new_time.nodes.create
 			new_node.update_attributes(id: json["Node"][$i]["id"],
-				hostname: json["Node"][$i]["host_name"]
+				hostname: json["Node"][$i]["id"]
 				)
 			$i = $i + 1
 		end
@@ -64,12 +67,36 @@ class App < Sinatra::Base
 		end
 	end
 
-	get '/server' do it
+	get '/timemodel' do
+		Timemodel.all.to_json
+	end
+
+	get '/timemodel' do
+		Timemodel.find(params[:id]).to_json
+	end
+
+	get '/timemodel/:id/node/:node_name' do
+
+		data = Array.new
+		data[0] = Timemodel.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json + ","
+
+		logger.info("right before the loop")
+		Edge.each do |edge|
+			logger.info "went into the loop"
+			if edge.fromID == params[:node_name] or edge.toID == params[:node_name]
+				data.push(edge.to_json + ",")
+			end
+		end
+
+		data
+	end
+
+	get '/server' do
 		Server.all.to_json
 	end
 
 	get '/server/:id' do
-		Poi.find(params[:id]).to_json
+		Server.find(params[:id]).to_json
 	end
 
 	post '/server' do
