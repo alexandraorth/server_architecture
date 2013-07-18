@@ -2,7 +2,11 @@ require 'sinatra/base'
 require 'json'
 require 'mongoid'
 require 'httparty'
-require_relative 'server'
+require_relative 'models/server'
+require_relative 'models/timemodel'
+require_relative 'models/edge'
+require_relative 'models/node'
+
 
 class App < Sinatra::Base
 	configure do 
@@ -12,26 +16,55 @@ class App < Sinatra::Base
 	end
 
 	get '/' do 
-		logger.info "hello, whale"
-		send_file File.join(settings.public_folder, 'index.html')
+		send_file File.join(File.read(settings.public_folder, 'index.html'))
 	end
 
 	before '/server*' do
 		content_type :json
 	end
 
-	get '/call' do
+	get '/apicall' do
 
-		# logger.debug("this is whale")
+		$i = 0
+		$j = 0
 
 		auth = {:username => "admin@appfirst.com", :password => "586854651"}
+
+		url = "https://wwws.appfirst.com/api/topology"
 
 		response = HTTParty.get(url, 
 			:basic_auth => auth,
 			:headers => {'Content-Type' => 'application/json'})
+
+		new_time = Timemodel.create 
+		new_time.update time: Time.new.to_i
+
+		json = JSON.parse(response.to_s().gsub('=>', ':'))
+
+		# Add nodes to timemodels from API
+		while json["Node"][$i] != nil do
+			new_node = new_time.nodes.create
+			new_node.update_attributes(id: json["Node"][$i]["id"],
+				hostname: json["Node"][$i]["host_name"]
+				)
+			$i = $i + 1
+		end
+
+		# Add edges to timemodels from API
+		while json["Edge"][$i] != nil do
+			new_edge = new_time.edges.create
+			new_edge.update_attributes(toID: json["Edge"][$i]["toID"],
+				fromID: json["Edge"][$i]["fromID"],
+				swrite: json["Edge"][$i]["swrite"],
+				sread: json["Edge"][$i]["sread"],
+				ttime1: json["Edge"][$i]["ttime1"],
+				ttime2: json["Edge"][$i]["ttime2"]
+			)
+			$i = $i + 1 
+		end
 	end
 
-	get '/server' do 
+	get '/server' do it
 		Server.all.to_json
 	end
 

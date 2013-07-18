@@ -20,10 +20,10 @@ $j = 0
 data = Array.new
 
 while json["Edge"][$i] != nil do
-  if json["Edge"][$i]["toID"] == ARGV[0]
-    data[$j] = json["Edge"][$i]["toID"]
+  if json["Edge"][$i]["toID"] == "production_streamer1"
+    data[$j] = json["Edge"][$i]["fromID"]
     $j = $j + 1
-  elsif json["Edge"][$i]["fromID"] == ARGV[0]
+  elsif json["Edge"][$i]["fromID"] == "production_streamer1"
     data [$j] = json["Edge"][$i]["toID"]
     $j = $j + 1
   end
