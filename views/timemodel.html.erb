@@ -1,0 +1,149 @@
+
+<script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js' type='text/javascript'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js' type='text/javascript'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js' type='text/javascript'></script>
+<!-- <script src='/public/js/script.js'></script> -->
+
+<script type='text/template' id='template-timemodel'>
+  Time = <%= time %>
+</script>
+
+<div id='timemodel-container'></div>
+
+<div id='button_container'></div>
+
+</br>
+</br>
+
+<div id='node_button_container'></div>
+
+<script type='text/javascript'>
+
+  var TimemodelApp = {
+    Models: {},
+    Collections: {},
+    Views: {},
+    Templates: {}
+  };
+
+  TimemodelApp.Models.Timemodel = Backbone.Model.extend({
+    defaults: {
+    
+    },
+    initialize: function(){
+      // console.log("timemodel model created")
+      // console.log(this)
+    }
+  });
+
+  TimemodelApp.Models.Node = Backbone.Model.extend({
+    defaults: {
+    },
+    initialize: function(){
+
+    }
+  });
+
+  var TimemodelCollection = Backbone.Collection.extend({
+    model: TimemodelApp.Models.Timemodel,
+    url: "/api/timemodel"
+  });
+
+  var NodesCollection = Backbone.Collection.extend({
+    initialize: function(models, options){
+      this.id = options.id
+    },
+    model: TimemodelApp.Models.Node,
+    url: function(){
+      return '/api/timemodel/' + this.id + '/nodes'
+    }
+  })
+
+  var ConnectedNodesCollection = Backbone.Collection.extend({
+    initialize: function(models, options){
+      this.id = options.id
+      this.node_name = options.node_name
+      console.log("this is the id" + this.id)
+      console.log("this is the hostname" + this.node_name)
+    },
+    model: TimemodelApp.Models.Node,
+    url: function(){
+      return '/api/timemodel/' + this.id + '/node/' + this.node_name
+    }
+  })
+
+  var TimemodelView1 = Backbone.View.extend({
+    el: $('body'),
+    events: {
+      'click #button_container': 'buttonClick',
+      'click #node_button_container': 'nodeButtonClick'
+    },
+    initialize: function(){
+      _.bindAll(this, 'render')
+      this.render();
+    },
+    render: function(){
+
+      fetch.done(function(){
+        // console.log(main_collection)        
+
+        main_collection.forEach(function(model){
+          $(this.el).append("This is the time " + model.get('time'));
+          $('#button_container').append("<button class='test_button'>" + model.get('time') + "</button>")
+        })
+
+        $('#timemodel-container').html($(this.el).html());
+        return this;
+      })
+    },
+    buttonClick: function(e){
+      var collectionID = main_collection.pop().get("_id")
+      // console.log("this is the id from within buttotn click " + collectionID)
+
+      nodesCollection = new NodesCollection([], {id: collectionID});
+      // console.log("this is the timeID of nodesColletion from within button click " + nodesCollection.id)
+      getNodes = nodesCollection.fetch();
+   
+      getNodes.done(function(){
+        console.log(nodesCollection);
+
+        nodesCollection.forEach(function(node){
+          $(this.el).append("This is the time " + node.get('hostname'));
+          $('#node_button_container').append("<button class='test_button'>" + node.get('hostname') + "</button>")
+        })
+
+      })
+    },
+
+    nodeButtonClick: function(e){
+      console.log("this is nodesCollection from within nodeButtonClick")
+      console.log(nodesCollection)
+      console.log(this)
+
+      var connectedid = main_collection.pop().get("_id")
+      var name = nodesCollection.pop().get("hostname")
+
+      var connectedNodesCollection = new ConnectedNodesCollection([],{id: connectedid, node_name: name })
+
+      getConnected = connectedNodesCollection.fetch()
+
+      console.log("this is the url " + '/api/timemodel/' + connectedid + '/node/' + name)
+
+      getConnected.done(function(){
+        console.log("these are the connected nodes")
+        console.log(connectedNodesCollection)
+      })
+    }
+
+  });
+
+  var main_collection = new TimemodelCollection();
+  var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
+  var nodesCollection
+
+  // console.log(main_collection)
+
+  var timemodelView1 = new TimemodelView1();
+
+
+</script>

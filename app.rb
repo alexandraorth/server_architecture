@@ -15,18 +15,18 @@ class App < Sinatra::Base
 	end
 
 	get '/' do 
-		File.read(File.join("public", 'index.html.erb'))
+		File.read(File.join('views', 'index.html.erb'))
 	end
 
-	before '/server*' do
+	get '/timemodel' do
+		File.read(File.join('views', 'timemodel.html.erb'))
+	end
+
+	before '/api*' do
 		content_type :json
 	end
 
-	before '/timemodel*' do
-		content_type :json
-	end
-
-	get '/apicall' do
+	get '/api/appfirst' do
 
 		$i = 0
 		$j = 0
@@ -67,51 +67,72 @@ class App < Sinatra::Base
 		end
 	end
 
-	get '/timemodel' do
+	get '/api/timemodel' do
 		Timemodel.all.to_json
 	end
 
-	get '/timemodel' do
+	get '/api/timemodel/:id' do
 		Timemodel.find(params[:id]).to_json
 	end
 
-	get '/timemodel/:id/node/:node_name' do
+	get '/api/timemodel/:id/nodes' do
+		 Timemodel.find(params[:id]).nodes.to_json
+	end
+
+	get '/api/timemodel/:id/node/:node_name' do
 
 		data = Array.new
+		data.push("[")
 		data[0] = Timemodel.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json + ","
 
-		logger.info("right before the loop")
+		logger.debug("right before the loop")
 		Edge.each do |edge|
-			logger.info "went into the loop"
+			logger.debug("went into the loop")
 			if edge.fromID == params[:node_name] or edge.toID == params[:node_name]
 				data.push(edge.to_json + ",")
 			end
 		end
 
+		data = data[-1][0..-2]
 		data
 	end
 
-	get '/server' do
+	post '/api/timemodel' do
+		data = JSON.parse params[:timemodel]
+		new_timemodel = Timemodel.create time: data['time']
+		response['Location'] = '/server/#{new_timemodel.id}'
+	end
+
+	put '/api/timemodel' do
+		data = JSON.parse params[:timemodel]
+		Timemodel.find(data['_id']).update_attributes time: data['time']
+	end
+
+	delete '/api/server/:id' do
+		Timemodel.find(params[:id]).delete
+	end
+
+	get '/api/server' do
 		Server.all.to_json
 	end
 
-	get '/server/:id' do
+	get '/api/server/:id' do
 		Server.find(params[:id]).to_json
 	end
 
-	post '/server' do
+	post '/api/server' do
 		data = JSON.parse params[:server]
 		new_server = Server.create nickname: data['nickname']
 		response['Location'] = "/server/#{new_server.id}"
 		status 201
 	end
 
-	put '/server' do
+	put '/api/server' do
 		data = JSON.parse params[:server]
 		Server.find(data['_id']).update_attributes nickname: data['name']
 	end
 
-	delete '/server/:id' do
+	delete '/api/server/:id' do
 		Server.find(params[:id]).delete
 	end
 end
