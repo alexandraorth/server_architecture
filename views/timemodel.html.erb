@@ -2,6 +2,9 @@
 <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js' type='text/javascript'></script>
 <script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js' type='text/javascript'></script>
 <script src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js' type='text/javascript'></script>
+<link rel="stylesheet" href='http://twitter.github.io/bootstrap/assets/css/bootstrap.css'>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+
 <!-- <script src='/public/js/script.js'></script> -->
 
 <script type='text/template' id='template-timemodel'>
@@ -11,6 +14,18 @@
 <div id='timemodel-container'></div>
 
 <div id='button_container'></div>
+
+<div id='edge_container'></div>
+
+<div class="btn-group">
+  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+    filter by section
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+  <!-- buttons get appended here -->  
+ </ul>
+</div>
 
 </br>
 </br>
@@ -31,8 +46,7 @@
     
     },
     initialize: function(){
-      // console.log("timemodel model created")
-      // console.log(this)
+
     }
   });
 
@@ -63,8 +77,6 @@
     initialize: function(models, options){
       this.id = options.id
       this.node_name = options.node_name
-      console.log("this is the id" + this.id)
-      console.log("this is the hostname" + this.node_name)
     },
     model: TimemodelApp.Models.Node,
     url: function(){
@@ -75,8 +87,8 @@
   var TimemodelView1 = Backbone.View.extend({
     el: $('body'),
     events: {
-      'click #button_container': 'buttonClick',
-      'click #node_button_container': 'nodeButtonClick'
+      'click #button_container button': 'buttonClick',
+      'click #node_button_container button': 'nodeButtonClick'
     },
     initialize: function(){
       _.bindAll(this, 'render')
@@ -85,11 +97,10 @@
     render: function(){
 
       fetch.done(function(){
-        // console.log(main_collection)        
 
         main_collection.forEach(function(model){
           $(this.el).append("This is the time " + model.get('time'));
-          $('#button_container').append("<button class='test_button'>" + model.get('time') + "</button>")
+          $('#button_container').append("<button class='test_button' data-id='" + model.get('_id') + "'>" + model.get('time') + "</button>")
         })
 
         $('#timemodel-container').html($(this.el).html());
@@ -97,41 +108,37 @@
       })
     },
     buttonClick: function(e){
-      var collectionID = main_collection.pop().get("_id")
-      // console.log("this is the id from within buttotn click " + collectionID)
+      var collectionID = $(e.currentTarget).data("id") // get id of current button
 
       nodesCollection = new NodesCollection([], {id: collectionID});
-      // console.log("this is the timeID of nodesColletion from within button click " + nodesCollection.id)
       getNodes = nodesCollection.fetch();
    
       getNodes.done(function(){
-        console.log(nodesCollection);
 
         nodesCollection.forEach(function(node){
-          $(this.el).append("This is the time " + node.get('hostname'));
-          $('#node_button_container').append("<button class='test_button'>" + node.get('hostname') + "</button>")
+          $(this.el).append("This is the hostname " + node.get('hostname'));
+          $('#dropdown-menu').append("<li><a href='#' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>")
         })
 
       })
     },
 
     nodeButtonClick: function(e){
-      console.log("this is nodesCollection from within nodeButtonClick")
-      console.log(nodesCollection)
-      console.log(this)
+      console.log("this is the hostname " + $(e.currentTarget).data("name"))
+      console.log("this is the id " + $(e.currentTarget).data("timeid"))
 
-      var connectedid = main_collection.pop().get("_id")
-      var name = nodesCollection.pop().get("hostname")
+      var connectedid = $(e.currentTarget).data("timeid") // get id of current button
+      var name = $(e.currentTarget).data("name") //get current hostname
 
       var connectedNodesCollection = new ConnectedNodesCollection([],{id: connectedid, node_name: name })
-
       getConnected = connectedNodesCollection.fetch()
-
-      console.log("this is the url " + '/api/timemodel/' + connectedid + '/node/' + name)
-
       getConnected.done(function(){
-        console.log("these are the connected nodes")
-        console.log(connectedNodesCollection)
+
+        connectedNodesCollection.forEach(function(edge){
+          $(this.el).append("From" + edge.get('fromID') + "To" + edge.get('toID'));
+          $('#edge_container').append("<h5>From: " + edge.get('fromID') + "    To: " + edge.get('toID') + "</h5>")
+        })
+
       })
     }
 
@@ -140,8 +147,6 @@
   var main_collection = new TimemodelCollection();
   var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
   var nodesCollection
-
-  // console.log(main_collection)
 
   var timemodelView1 = new TimemodelView1();
 

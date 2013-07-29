@@ -10,5 +10,7 @@ class Edge
 	field :ttime1, type: String
 	field :ttime2, type: String
 
+	attr_accessible :toID, :fromID, :swrite, :sread, :ttime1, :ttime2
+
 	belongs_to :timemodel
 end
