@@ -84,29 +84,25 @@ class App < Sinatra::Base
 		data = Array.new
 
 		data.push("[")
-		data[1] = Timemodel.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json 
-		data.push(",")
+		# data[1] = Timemodel.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json 
+		# data.push(",")
 
 		logger.info("this is the node name")
 		logger.info(params[:node_name])
 
 		# logger.info("right before the loop")
 		Edge.each do |edge|
-			logger.info("from edge" + edge.fromID)
-			logger.info("to edge" + edge.toID)
+			# logger.info("from edge" + edge.fromID)
+			# logger.info("to edge" + edge.toID)
 			if edge.fromID == params[:node_name] or edge.toID == params[:node_name]
 				data.push(edge.to_json )
 				data.push(",")
 			end
 		end
 
-		#data[-1] = data[-1][0..-2]
 		data[-1] = "]"
 
 		data.join("")
-
-		logger.info(data)
-
 		return data
 	end
 
