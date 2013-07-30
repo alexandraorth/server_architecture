@@ -24,10 +24,9 @@ svg{
 
 .node text{
   fill: black;
+  font-size: 12;
   color: black;
   z-index: 5;
-  display:inline;
-  position: absolute;
 }
 
 .cursor {
@@ -149,7 +148,6 @@ svg{
         nodesCollection.forEach(function(node){
           $(this.el).append("This is the hostname " + node.get('hostname'));
           $('.dropdown-menu').append("<li><a href='#' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
-
         })
 
       })
@@ -193,19 +191,19 @@ svg{
 <!-- d3 script begins here -->
 <script>
 
-  var width = 700,
+  var width = 1200,
       height = 1000;
 
   var fill = d3.scale.category20();
 
   var force = d3.layout.force()
       .size([width, height])
-      .nodes([{}]) // initialize with a single node
+      .nodes([]) // initialize with a single node
       .linkDistance(30)
       .charge(-60)
       .on("tick", tick)
       .linkDistance(100)
-      .gravity(.001);
+      .gravity(.01);
 
   var svg = d3.select("body").append("svg")
       .attr("width", width)
@@ -219,7 +217,7 @@ svg{
 
   var nodes = force.nodes(),
       links = force.links(),
-      node = svg.selectAll(".node"),
+      g = svg.selectAll(".node"),
       link = svg.selectAll(".link");
 
   var cursor = svg.append("circle")
@@ -243,7 +241,8 @@ svg{
       var node = {x: 200, y: 200, name: nodeName}, //push it to nodes
       n = nodes.push(node);
     
-      // add links to any nearby nodes
+     
+    // add links to any nearby nodes
       nodes.forEach(function(target) {
         // console.log(connection + "  ->>>>>  " + target.name)
         if(connection === target.name){
@@ -252,7 +251,7 @@ svg{
       });
 
       restart();
-    }
+      }
   }
 
   function mousemove() {
@@ -287,8 +286,7 @@ svg{
     .attr("x2", function(d) { return d.target.x; })
     .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("x", function(d) { return d.x; })
-    .attr("y", function(d) { return d.y; });
+    g.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
  
   }
 
@@ -299,15 +297,18 @@ svg{
     link.enter().insert("line", ".node")
         .attr("class", "link");
 
-    node = node.data(nodes);
+    g = g.data(nodes);
+    console.log(g)
 
-    node.enter().insert("rect", ".cursor")
+    var holder = g.enter().insert("g")
     .attr("class", "node")
-    .attr("height", 20)
-    .attr("width", 50)
     .call(force.drag);
 
-    text = svg.select("node").append("svg:text")
+    holder.insert("rect", ".cursor")
+    .attr("height", 20)
+    .attr("width", 50);
+
+    holder.append("svg:text")
     .attr("x", 10)
     .attr("dy", ".31em")
     .text(function(target){
