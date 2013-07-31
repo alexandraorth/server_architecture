@@ -8,9 +8,51 @@
 
 <style>
 
+#time-container{
+  width: 12%;
+  height: 100%;
+  padding-right: 0px;
+  position:absolute;
+}
+
+#server-container{
+  width:12%;
+  height: 100%;
+  padding-left: 0px;
+  position: absolute;
+  left: 12%;
+}
+
+#container {
+  margin:2%;
+  padding:20px;
+  border:2px solid #d0d0d0;
+  border-radius: 5px;
+  }
+
+#container-container{
+  position: absolute;  
+  left: 24%;
+  width: 74%;
+  height: 90%;
+}
+
+.selected{
+  background-color: #D9EDF7;
+  fill: blue;
+}
+
+.list-group{
+  width:100%;
+  height: 100%;
+  outline: 1px black;
+  overflow: auto;
+}
+
 svg{
   display: block;
-  margin: auto;
+  width: 100%;
+  margin: 0 auto;
   fill: none;
   stroke: black;
   pointer-events: all;
@@ -48,275 +90,314 @@ svg{
   Time = <%= time %>
 </script>
 
-<div id='button_container'></div>
+<body onload="sizeChange()">
 
-<div class="btn-group">
-  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-    filter by section
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu">
-  <!-- buttons get appended here -->  
- </ul>
-</div>
+  <div id='time-container' >
+    <div class="list-group">
 
-<div id='edge_container'></div>
+    </div>
+  </div>
 
-<script type='text/javascript'>
+  <div id='server-container' >
+    <div class="list-group">
 
-  var TimemodelApp = {
-    Models: {},
-    Collections: {},
-    Views: {},
-    Templates: {}
-  };
+    </div>
+  </div>
 
-  TimemodelApp.Models.Timemodel = Backbone.Model.extend({
-    defaults: {
-    
-    },
-    initialize: function(){
+  <div id="container-container">
+    <div id='container'>
+    </div>
+  </div>
 
-    }
-  });
+  <script type='text/javascript'>
 
-  TimemodelApp.Models.Node = Backbone.Model.extend({
-    defaults: {
-    },
-    initialize: function(){
+    var TimemodelApp = {
+      Models: {},
+      Collections: {},
+      Views: {},
+      Templates: {}
+    };
 
-    }
-  });
+    TimemodelApp.Models.Timemodel = Backbone.Model.extend({
+      defaults: {
+      
+      },
+      initialize: function(){
 
-  var TimemodelCollection = Backbone.Collection.extend({
-    model: TimemodelApp.Models.Timemodel,
-    url: "/api/timemodel"
-  });
-
-  var NodesCollection = Backbone.Collection.extend({
-    initialize: function(models, options){
-      this.id = options.id
-    },
-    model: TimemodelApp.Models.Node,
-    url: function(){
-      return '/api/timemodel/' + this.id + '/nodes'
-    }
-  })
-
-  var ConnectedNodesCollection = Backbone.Collection.extend({
-    initialize: function(models, options){
-      this.id = options.id
-      this.node_name = options.node_name
-    },
-    model: TimemodelApp.Models.Node,
-    url: function(){
-      return '/api/timemodel/' + this.id + '/node/' + this.node_name
-    }
-  })
-
-  var TimemodelView1 = Backbone.View.extend({
-    el: $('body'),
-    events: {
-      'click #button_container button': 'buttonClick',
-      'click .dropdown-menu a': 'nodeButtonClick'
-    },
-    initialize: function(){
-      _.bindAll(this, 'render')
-      this.render();
-    },
-    render: function(){
-
-      fetch.done(function(){
-
-        main_collection.forEach(function(model){
-          $(this.el).append("This is the time " + model.get('time'));
-          $('#button_container').append("<button class='test_button' data-id='" + model.get('_id') + "'>" + model.get('time') + "</button>")
-        })
-
-        $('#timemodel-container').html($(this.el).html());
-        return this;
-      })
-    },
-    buttonClick: function(e){
-      var collectionID = $(e.currentTarget).data("id") // get id of current button
-
-      nodesCollection = new NodesCollection([], {id: collectionID});
-      getNodes = nodesCollection.fetch();
-   
-      getNodes.done(function(){
-
-        nodesCollection.forEach(function(node){
-          $(this.el).append("This is the hostname " + node.get('hostname'));
-          $('.dropdown-menu').append("<li><a href='#' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
-        })
-
-      })
-    },
-
-    nodeButtonClick: function(e){
-      console.log("this is the hostname " + $(e.currentTarget).data("name"))
-      console.log("this is the id " + $(e.currentTarget).data("timeid"))
-
-      var connectedid = $(e.currentTarget).data("timeid") // get id of current button
-      var name = $(e.currentTarget).data("name") //get current hostname
-
-      clicked(name);
-
-      var connectedNodesCollection = new ConnectedNodesCollection([],{id: connectedid, node_name: name })
-      getConnected = connectedNodesCollection.fetch()
-      getConnected.done(function(){
-
-        connectedNodesCollection.forEach(function(edge){
-
-          if(edge.get('toID') === name)
-            clicked(edge.get('fromID'), edge.get('toID'))
-          else if(edge.get('fromID') === name)
-            clicked(edge.get('toID'), edge.get('fromID'))
-
-        })
-
-      })
-    }
-
-  });
-
-  var main_collection = new TimemodelCollection();
-  var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
-  var nodesCollection
-
-  var timemodelView1 = new TimemodelView1();
-</script>
-
-
-<!-- d3 script begins here -->
-<script>
-
-  var width = 1200,
-      height = 1000;
-
-  var fill = d3.scale.category20();
-
-  var force = d3.layout.force()
-      .size([width, height])
-      .nodes([]) // initialize with a single node
-      .linkDistance(30)
-      .charge(-60)
-      .on("tick", tick)
-      .linkDistance(100)
-      .gravity(.01);
-
-  var svg = d3.select("body").append("svg")
-      .attr("width", width)
-      .attr("height", height)
-      .on("mousemove", mousemove)
-      // .on("mousedown", mousedown);
-
-  svg.append("rect")
-      .attr("width", width)
-      .attr("height", height);
-
-  var nodes = force.nodes(),
-      links = force.links(),
-      g = svg.selectAll(".node"),
-      link = svg.selectAll(".link");
-
-  var cursor = svg.append("circle")
-      .attr("r", 30)
-      .attr("transform", "translate(-100,-100)")
-      .attr("class", "cursor");
-
-  // restart();
-
-  function clicked(nodeName, connection){
-    var bool = new Boolean(); // boolean to 
-    bool = false
-
-    nodes.forEach(function(target) {
-      if(target.name == nodeName){ // if the node does not exist
-        bool = true
       }
     });
 
-    if(bool == false){ //if the node does not exist
-      var node = {x: 200, y: 200, name: nodeName}, //push it to nodes
-      n = nodes.push(node);
-    
+    TimemodelApp.Models.Node = Backbone.Model.extend({
+      defaults: {
+      },
+      initialize: function(){
+
+      }
+    });
+
+    var TimemodelCollection = Backbone.Collection.extend({
+      model: TimemodelApp.Models.Timemodel,
+      url: "/api/timemodel"
+    });
+
+    var NodesCollection = Backbone.Collection.extend({
+      initialize: function(models, options){
+        this.id = options.id
+      },
+      model: TimemodelApp.Models.Node,
+      url: function(){
+        return '/api/timemodel/' + this.id + '/nodes'
+      }
+    })
+
+    var ConnectedNodesCollection = Backbone.Collection.extend({
+      initialize: function(models, options){
+        this.id = options.id
+        this.node_name = options.node_name
+      },
+      model: TimemodelApp.Models.Node,
+      url: function(){
+        return '/api/timemodel/' + this.id + '/node/' + this.node_name
+      }
+    })
+
+    var TimemodelView1 = Backbone.View.extend({
+      el: $('body'),
+      events: {
+        'click #time-container .list-group a': 'buttonClick',
+        'click #server-container .list-group a': 'nodeButtonClick'
+      },
+      initialize: function(){
+        _.bindAll(this, 'render')
+        this.render();
+      },
+      render: function(){
+
+        fetch.done(function(){
+
+          main_collection.forEach(function(model){
+            $(this.el).append("This is the time " + model.get('time'));
+            $('#time-container .list-group').append("<a href='#' class='list-group-item' class='test_button' data-id='" + model.get('_id') + "'>" + model.get('time') + "</a>")
+          })
+
+          $('#timemodel-container').html($(this.el).html());
+          return this;
+        })
+      },
+      buttonClick: function(e){
+        var collectionID = $(e.currentTarget).data("id") // get id of current button
+
+        nodesCollection = new NodesCollection([], {id: collectionID});
+        getNodes = nodesCollection.fetch();
      
-    // add links to any nearby nodes
+        getNodes.done(function(){
+
+          nodesCollection.forEach(function(node){
+            $(this.el).append("This is the hostname " + node.get('hostname'));
+            $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
+          })
+
+        })
+      },
+
+      nodeButtonClick: function(e){
+        console.log("this is the hostname " + $(e.currentTarget).data("name"))
+        console.log("this is the id " + $(e.currentTarget).data("timeid"))
+
+        var connectedid = $(e.currentTarget).data("timeid") // get id of current button
+        var name = $(e.currentTarget).data("name") //get current hostname
+
+        clicked(name);
+
+        $(e.currentTarget).addClass('selected')
+
+        var connectedNodesCollection = new ConnectedNodesCollection([],{id: connectedid, node_name: name })
+        getConnected = connectedNodesCollection.fetch()
+        getConnected.done(function(){
+
+        console.log("THESE ARE THE CONNECTED NODES")
+        console.log(connectedNodesCollection)
+
+          connectedNodesCollection.forEach(function(edge){
+
+            if(edge.get('toID') === name)
+              clicked(edge.get('fromID'), edge.get('toID'))
+            else if(edge.get('fromID') === name)
+              clicked(edge.get('toID'), edge.get('fromID'))
+
+          })
+
+        })
+      }
+
+    });
+
+    var main_collection = new TimemodelCollection();
+    var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
+    var nodesCollection
+
+    var timemodelView1 = new TimemodelView1();
+  </script>
+
+
+  <!-- d3 script begins here -->
+  <script>
+
+    d3.select(window)
+          .on("resize", sizeChange);
+
+    var fill = d3.scale.category20();
+
+    var force = d3.layout.force()
+        // .size([width, height])
+        .nodes([]) // initialize with a single node
+        .linkDistance(250)
+        .charge(-60)
+        .on("tick", tick)
+        .linkDistance(100)
+        .gravity(.01);
+
+    var svg = d3.select("#container")
+        .append("svg")
+        .append("g")
+        .attr("class", "svg-container")
+        .on("mousemove", mousemove);
+
+    // svg.append("rect")
+    //     .attr("width", width)
+    //     .attr("height", height);
+
+    var nodes = force.nodes(),
+        links = force.links(),
+        g = svg.selectAll(".node"),
+        link = svg.selectAll(".link");
+
+    var cursor = svg.append("circle")
+        .attr("r", 30)
+        .attr("transform", "translate(-100,-100)")
+        .attr("class", "cursor");
+
+    var node_drag = d3.behavior.drag()
+    .on("dragstart", dragstart)
+    .on("drag", dragmove)
+    .on("dragend", dragend);
+
+    function sizeChange() {
+      console.log("width: " + $("#container").width()/900)
+
+      d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
+      // $("svg").height($("#container").width()*0.618);
+    }
+
+    function dragstart(d, i) {
+      console.log("dragstart was called")
+      force.stop() // stops the force auto positioning before you start dragging
+    }
+
+    function dragmove(d, i) {
+      console.log("dragmove was called")
+        d.px += d3.event.dx;
+        d.py += d3.event.dy;
+        d.x += d3.event.dx;
+        d.y += d3.event.dy; 
+        tick(); // this is the key to make it work together with updating both px,py,x,y on d !
+    }
+
+    function dragend(d, i) {
+      console.log("dragend was called")
+        d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+        tick();
+        force.resume();
+    }
+
+    function clicked(nodeName, connection){
+      var bool = new Boolean(); // boolean to 
+      bool = false
+
       nodes.forEach(function(target) {
-        // console.log(connection + "  ->>>>>  " + target.name)
-        if(connection === target.name){
-          links.push({source: node, target: target});
+        if(target.name == nodeName){ // if the node does not exist
+          bool = true
         }
       });
 
-      restart();
-      }
-  }
+      // console.log("THIS IS THE BOOL- ARE NUMBERS RIGHT?" + bool)
 
-  function mousemove() {
-    cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
-  }
-
-  function mousedown() {
-    var point = d3.mouse(this),
-        node = {x: point[0], y: point[1]},
+      if(bool == false){ //if the node does not exist
+        var node = {x: 200, y: 200, name: nodeName}, //push it to nodes
         n = nodes.push(node);
 
-    console.log("this is the point: ")
-    console.log(point)
-
-    console.log(node)
-
-    // add links to any nearby nodes
-    nodes.forEach(function(target) {
-      var x = target.x - node.x,
-          y = target.y - node.y;
-      if (Math.sqrt(x * x + y * y) < 30) {
-        links.push({source: node, target: target});
+        // add links to any nearby nodes
+        nodes.forEach(function(target) {
+            // console.log(connection + "  ->>>>>  " + target.name)
+          if(connection === target.name){
+            // console.log("this is the link that was pushed" + connection + "  ->>>>   " + target.name)
+            links.push({source: node, target: target});
+          }
+        });      
+        restart();    
       }
-    });
+      else if(bool == true){ //even if you don't add the node, you want to add new links on that node
+        var from = null,
+            to = null;
 
-    restart();
-  }
+        nodes.forEach(function(target){
+          if(target.name == nodeName){
+            from = target;
+          }
+          else if(target.name == connection){
+            to = target;
+          }
+        });
 
-  function tick() {
-    link.attr("x1", function(d) { return d.source.x; })
-    .attr("y1", function(d) { return d.source.y; })
-    .attr("x2", function(d) { return d.target.x; })
-    .attr("y2", function(d) { return d.target.y; });
+        if(from != null && to != null){ // if both the to and the from exist, create that connection
+          links.push({source: from, target: to});
+        };
 
-    g.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
- 
-  }
+        restart();
 
-  function restart() {
+      };
+    }
 
-    link = link.data(links);
+    function mousemove() {
+      cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
+    }
 
-    link.enter().insert("line", ".node")
-        .attr("class", "link");
+    function tick() {
+      link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
 
-    g = g.data(nodes);
-    console.log(g)
+      g.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    }
 
-    var holder = g.enter().insert("g")
-    .attr("class", "node")
-    .call(force.drag);
+    function restart() {
 
-    holder.insert("rect", ".cursor")
-    .attr("height", 20)
-    .attr("width", 50);
+      link = link.data(links);
 
-    holder.append("svg:text")
-    .attr("x", 10)
-    .attr("dy", ".31em")
-    .text(function(target){
-      return target.name;
-    })
+      link.enter().insert("line", ".node")
+          .attr("class", "link");
 
-    force.start();
+      g = g.data(nodes);
+      // console.log(g)
 
-  }
+      var holder = g.enter().insert("g")
+      .attr("class", "node")
+      .call(node_drag);
 
-</script>
+      holder.insert("rect", ".cursor")
+      .attr("height", 20)
+      .attr("width", 50);
+
+      holder.append("svg:text")
+      .attr("x", 10)
+      .attr("dy", ".31em")
+      .text(function(target){
+        return target.name;
+      })
+
+      force.start();
+    }
+  </script>
+
+</body>
