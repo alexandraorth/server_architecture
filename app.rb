@@ -6,6 +6,7 @@ require_relative 'models/server'
 require_relative 'models/timemodel'
 require_relative 'models/edge'
 require_relative 'models/node'
+require_relative 'models/application'
 
 class App < Sinatra::Base
 	configure do 
@@ -39,16 +40,41 @@ class App < Sinatra::Base
 			:basic_auth => auth,
 			:headers => {'Content-Type' => 'application/json'})
 
+		json = JSON.parse(response.to_s().gsub('=>', ':'))
+
+		url = "https://wwws.appfirst.com/api/servers"
+
+		response = HTTParty.get(url, 
+			:basic_auth => auth,
+			:headers => {'Content-Type' => 'application/json'})
+
+		serverJSON = JSON.parse(response.to_s().gsub('=>', ':'))		
+
 		new_time = Timemodel.create 
 		new_time.update_attributes(time: Time.new.to_i)
-
-		json = JSON.parse(response.to_s().gsub('=>', ':'))
 
 		# Add nodes to timemodels from API
 		while json["Node"][$i] != nil do
 			new_node = new_time.nodes.create
-			new_node.update_attributes(id: json["Node"][$i]["id"],
-				hostname: json["Node"][$i]["id"]
+			name = json["Node"][$i]["id"]
+			id = ""
+
+			$k = 0
+			while serverJSON[$k]
+				# logger.info("went into this while-- OMG WHILE")
+				if serverJSON[$k]["nickname"] == name
+					# logger.info(serverJSON[$k]["nickname"])
+					# logger.info(name)
+					id = serverJSON[$k]["id"]
+				end
+				$k = $k +1
+			end
+
+			logger.info(id)
+
+			new_node.update_attributes(
+				hostname: name,
+				server_id: id
 				)
 			$i = $i + 1
 		end
@@ -56,7 +82,8 @@ class App < Sinatra::Base
 		# Add edges to timemodels from API
 		while json["Edge"][$i] != nil do
 			new_edge = new_time.edges.create
-			new_edge.update_attributes(toID: json["Edge"][$i]["toID"],
+			new_edge.update_attributes(
+				toID: json["Edge"][$i]["toID"],
 				fromID: json["Edge"][$i]["fromID"],
 				swrite: json["Edge"][$i]["swrite"],
 				sread: json["Edge"][$i]["sread"],
@@ -124,6 +151,36 @@ class App < Sinatra::Base
 
 	get '/api/server' do
 		Server.all.to_json
+	end
+
+	get '/api/application' do
+
+		$i = 0;
+
+		auth = {:username => "admin@appfirst.com", :password => "586854651"}
+
+		url = "https://wwws.appfirst.com/api/applications"
+
+		response = HTTParty.get(url, 
+			:basic_auth => auth,
+			:headers => {'Content-Type' => 'application/json'})
+
+		json = JSON.parse(response.to_s().gsub('=>', ':'))
+
+		while json[$i] != nil do
+			new_app = Application.create
+
+			new_app.update_attributes(
+				name: json[$i]["name"],
+				server_ids: json[$i]["servers"]
+				)
+
+			logger.info(new_app)
+
+			$i = $i + 1
+		end
+		
+		Application.all.to_json
 	end
 
 	get '/api/server/:id' do
