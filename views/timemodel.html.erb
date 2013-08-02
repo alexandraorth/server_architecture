@@ -5,27 +5,36 @@
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css"></link>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
 
 <style>
 
-#slider{
-  position: fixed;
-  bottom: 50px;
+#slider-vertical{
+  margin-top: 8%;
+  margin-left: 10px;
+  position: absolute;
+  height: 80%;
 }
 
-#time-container{
+#slider-vertical .ui-slider-range{
+  background: #428BCA;
+}
+
+/*#time-container{
   width: 12%;
   height: 100%;
   padding-right: 0px;
+  left:2%;
   position:absolute;
 }
-
+*/
 #server-container{
   width:12%;
   height: 100%;
   padding-left: 0px;
   position: absolute;
-  left: 12%;
+  left: 2%;
 }
 
 #container {
@@ -37,9 +46,14 @@
 
 #container-container{
   position: absolute;  
-  left: 24%;
-  width: 74%;
+  left: 14%;
+  width: 86%;
   height: 90%;
+}
+
+#container-container text{
+  position: absolute;
+  right: 10%;
 }
 
 .selected{
@@ -97,11 +111,11 @@ svg{
 
 <body onload="sizeChange()">
 
-  <div id='time-container' >
+<!--   <div id='time-container' >
     <div class="list-group">
       <li class="list-group-item">Time</li>
     </div>
-  </div>
+  </div> -->
 
   <div id='server-container' >
     <div class="list-group">
@@ -111,8 +125,11 @@ svg{
 
   <div id="container-container">
     <div id='container'>
+    <text class="time">Time: </text>
     </div>
   </div>
+
+  <div id="slider-vertical"></div>
 
   <script type='text/javascript'>
 
@@ -169,7 +186,7 @@ svg{
     var TimemodelView1 = Backbone.View.extend({
       el: $('body'),
       events: {
-        'click #time-container .list-group a': 'buttonClick',
+        // 'click #time-container .list-group a': 'buttonClick',
         'click #server-container .list-group a': 'nodeButtonClick'
       },
       initialize: function(){
@@ -177,7 +194,6 @@ svg{
         this.render();
       },
       render: function(){
-
         fetch.done(function(){
 
           main_collection.forEach(function(model){
@@ -186,26 +202,63 @@ svg{
           })
 
           $('#timemodel-container').html($(this.el).html());
-          return this;
         })
-      },
-      buttonClick: function(e){
-        var collectionID = $(e.currentTarget).data("id") // get id of current button
 
-        nodesCollection = new NodesCollection([], {id: collectionID});
-        getNodes = nodesCollection.fetch();
+        var self = this;
+        var length = main_collection.length
+
+        $( "#slider-vertical" ).slider({
+          orientation: 'vertical',
+          range: 'min',
+          min: 0,
+          max: 100,
+          slide: self.updateSlider
+        });
+
+      },
+      updateSlider: function(event, ui){
+
+        // console.log(main_collection.length)
+        // console.log(ui.value)
+        console.log("this is being updated")
+
+        var i = (ui.value/100)*main_collection.length
+        i = Math.ceil(i)
+
+        console.log(i)
+        console.log(main_collection.models[i])
+
+        var currentModel = main_collection.models[i]
+
+        console.log(currentModel.get("_id"))
+
+        console.log("this is the this")
+        console.log(this)
+
+        click(currentModel.get("_id"), currentModel.get("time"))
+
+      },
+      // buttonClick: function(e){
+      //   var collectionID = $(e.currentTarget).data("id") // get id of current button
+
+      //   // var collectionID = e;
+
+      //   console.log("this is the id from within button click" + collectionID)
+
+      //   nodesCollection = new NodesCollection([], {id: collectionID});
+      //   getNodes = nodesCollection.fetch();
      
-        getNodes.done(function(){
+      //   getNodes.done(function(){
 
-          $('#server-container .list-group a').remove()
+      //     $('#server-container .list-group a').remove()
 
-          nodesCollection.forEach(function(node){
-            $(this.el).append("This is the hostname " + node.get('hostname'));
-            $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
-          })
+      //     nodesCollection.forEach(function(node){
+      //       $(this.el).append("This is the hostname " + node.get('hostname'));
+      //       $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
+      //     })
 
-        })
-      },
+      //   })
+      // },
 
       // Will toggle if the button has been selected or not
       // If selected, will delect and remove node
@@ -247,6 +300,29 @@ svg{
         }
       }
     });
+
+
+    function click(e, f){
+      var collectionID = e;
+
+      console.log()
+
+      nodesCollection = new NodesCollection([], {id: collectionID});
+      getNodes = nodesCollection.fetch();
+
+      getNodes.done(function(){
+
+        $('#server-container .list-group a').remove()
+
+        nodesCollection.forEach(function(node){
+          $(this.el).append("This is the hostname " + node.get('hostname'));
+          $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
+        });
+      
+        $('.time').text("Time: " + f)
+
+      });
+    }
 
     var main_collection = new TimemodelCollection();
     var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
