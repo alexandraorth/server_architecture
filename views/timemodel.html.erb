@@ -8,6 +8,11 @@
 
 <style>
 
+#slider{
+  position: fixed;
+  bottom: 50px;
+}
+
 #time-container{
   width: 12%;
   height: 100%;
@@ -192,6 +197,8 @@ svg{
      
         getNodes.done(function(){
 
+          $('#server-container .list-group a').remove()
+
           nodesCollection.forEach(function(node){
             $(this.el).append("This is the hostname " + node.get('hostname'));
             $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
@@ -236,7 +243,6 @@ svg{
         }
         // if the node is not selected
         else{
-          console.log("this node has been deselected")
           remove(name)
         }
       }
@@ -275,8 +281,8 @@ svg{
 
     var nodes = force.nodes(),
         links = force.links(),
-        g = svg.selectAll(".node"),
-        link = svg.selectAll(".link");
+        rect = svg.append('svg:g').selectAll("g"),
+        link = svg.append('svg:g').selectAll(".link");
 
     var cursor = svg.append("circle")
         .attr("r", 30)
@@ -289,8 +295,6 @@ svg{
         .on("dragend", dragend);
 
     function sizeChange() {
-      console.log("width: " + $("#container").width()/900)
-
       d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
       // $("svg").height($("#container").width()*0.618);
     }
@@ -334,9 +338,7 @@ svg{
 
         // add links to any nearby nodes
         nodes.forEach(function(target) {
-            // console.log(connection + "  ->>>>>  " + target.name)
           if(connection === target.name){
-            // console.log("this is the link that was pushed" + connection + "  ->>>>   " + nodeName)
             links.push({source: node, target: target});
           }
         });      
@@ -367,35 +369,31 @@ svg{
     //removes the node and any links that connect to that node, 
     // does not remove connecting nodes.
     function remove(nodeName){
-
       //find the node that you want to remove
       nodes.forEach(function(target, index){
         if(target.name == nodeName){
           nodes.splice(index, 1);
-        }
-      });
+          // swap();
 
+          $(this).addClass("toRemove")
+        };
+      });
 
       //Iterate in reverse. This way the indeces do not change
       //as you iterate through and you can see/remove all the links.
       //The indeces will change for the links "behind" the current link,
       //that is, all of the links that you have already checked.
       //This is also the reason a forEach was not used
-      for(var i = links.length - 1; i >= 0; i--){
+      for(var i = links.length -1; i >= 0; i--){
         line = links[i]
 
-        console.log(i);
-
         if(line.source.name == nodeName){
-          console.log(links);
           links.splice(i, 1);
         }
         else if(line.target.name == nodeName){
-          console.log(links)
           links.splice(i, 1);
         }
       }
-
       //redraw the nodes
       restart();
     }
@@ -410,35 +408,36 @@ svg{
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
 
-      g.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+      rect.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
     }
 
     function restart() {
 
       link = link.data(links);
 
-      link.enter().insert("line", ".node").attr("class", "link");
       link.exit().remove();
 
-      g = g.data(nodes);
-      // console.log(g)
+      link.enter().insert("line", ".node").attr("class", "link");
 
-      var holder = g.enter().insert("g")
-      .attr("class", "node")
+      rect = rect.data(nodes, function(d){return d.name})
+
+      var g = rect.enter().append('svg:g');
+
+      g.attr("class", "node")
       .call(node_drag);
 
-      g.exit().remove();
-
-      holder.insert("rect", ".cursor")
+      g.append("rect", ".cursor")
       .attr("height", 20)
       .attr("width", 50);
 
-      holder.append("svg:text")
+      g.append("svg:text")
       .attr("x", 10)
       .attr("dy", ".31em")
       .text(function(target){
         return target.name;
       })
+
+      rect.exit().remove();
 
       force.start();
     }
