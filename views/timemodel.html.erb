@@ -53,7 +53,7 @@
 
 #container-container text{
   position: absolute;
-  right: 10%;
+  right: 9%;
 }
 
 .selected{
@@ -101,6 +101,11 @@ svg{
   z-index: 4;
 }
 
+rect{
+  fill: white;
+  z-index: 5;
+}
+
 </style>
 
 <!-- <script src='/public/js/script.js'></script> -->
@@ -125,6 +130,7 @@ svg{
 
   <div id="container-container">
     <div id='container'>
+    <button type="button" class="btn btn-primary btn-small toggle" >Application View</button>
     <text class="time">Time: </text>
     </div>
   </div>
@@ -141,6 +147,15 @@ svg{
     };
 
     TimemodelApp.Models.Timemodel = Backbone.Model.extend({
+      defaults: {
+      
+      },
+      initialize: function(){
+
+      }
+    });
+
+    TimemodelApp.Models.Application = Backbone.Model.extend({
       defaults: {
       
       },
@@ -172,6 +187,15 @@ svg{
       }
     })
 
+    var ApplicationCollection = Backbone.Collection.extend({
+      initialize: function(models, options){
+      },
+      model: TimemodelApp.Models.Application,
+      url: function(){
+        return '/api/application'
+      }
+    })
+
     var ConnectedNodesCollection = Backbone.Collection.extend({
       initialize: function(models, options){
         this.id = options.id
@@ -187,7 +211,9 @@ svg{
       el: $('body'),
       events: {
         // 'click #time-container .list-group a': 'buttonClick',
-        'click #server-container .list-group a': 'nodeButtonClick'
+        'click #server-container .list-group .nodeButton': 'nodeButtonClick',
+        'click #server-container .list-group .appButton': 'appButtonClick',
+        'click .toggle': 'toggleView'
       },
       initialize: function(){
         _.bindAll(this, 'render')
@@ -216,6 +242,22 @@ svg{
         });
 
       },
+      toggleView: function(){
+        console.log("THIS WAS CLICKED HOMG SLEEP")
+
+        applicationCollection = new ApplicationCollection();
+        getApps = applicationCollection.fetch();
+
+        getApps.done(function(){
+
+          $('#server-container .list-group a').remove()
+
+          applicationCollection.forEach(function(application){
+            // $(this.el).append("This is the hostname " + node.get('hostname'));
+            $('#server-container .list-group').append("<a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a>");
+          });
+        });
+      },
       updateSlider: function(event, ui){
 
         // console.log(main_collection.length)
@@ -225,16 +267,7 @@ svg{
         var i = (ui.value/100)*main_collection.length
         i = Math.ceil(i)
 
-        console.log(i)
-        console.log(main_collection.models[i])
-
         var currentModel = main_collection.models[i]
-
-        console.log(currentModel.get("_id"))
-
-        console.log("this is the this")
-        console.log(this)
-
         click(currentModel.get("_id"), currentModel.get("time"))
 
       },
@@ -297,7 +330,26 @@ svg{
         // if the node is not selected
         else{
           remove(name)
-        }
+        };
+      },
+      appButtonClick: function(e){
+        current = $(e.currentTarget)
+
+        applicationName = current.data("name")
+
+        var serverArray;
+
+        applicationCollection.forEach(function(application){
+          if(application.get("name") == applicationName){
+            console.log(application.get("server_ids"))
+            serverArray = application.get("server_ids")
+          }
+        })
+
+        console.log("the name of this application is " + applicationName)
+
+        addApp(applicationName, serverArray)
+
       }
     });
 
@@ -316,7 +368,7 @@ svg{
 
         nodesCollection.forEach(function(node){
           $(this.el).append("This is the hostname " + node.get('hostname'));
-          $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
+          $('#server-container .list-group').append("<a href='#' class='list-group-item nodeButton' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
         });
       
         $('.time').text("Time: " + f)
@@ -327,6 +379,7 @@ svg{
     var main_collection = new TimemodelCollection();
     var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
     var nodesCollection
+    var applicationCollection
 
     var timemodelView1 = new TimemodelView1();
   </script>
@@ -347,7 +400,7 @@ svg{
         .charge(-60)
         .on("tick", tick)
         .linkDistance(100)
-        .gravity(.01);
+        .gravity(.002);
 
     var svg = d3.select("#container")
         .append("svg")
@@ -391,55 +444,84 @@ svg{
     }
 
     function dragend(d, i) {
-        d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
-        tick();
-        force.resume();
+      d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+      tick();
+      force.resume();
     }
 
     //adds the node and the connection if it does not exist
     //if the node exists and the taget exists, adds only the connection
     function add(nodeName, connection){
-      var bool = new Boolean(); // boolean to 
+      var bool = new Boolean(); // boolean 
       bool = false
 
+      //test to see if the node exists
       nodes.forEach(function(target) {
-        if(target.name == nodeName){ // if the node does not exist
+        if(target.name == nodeName){
           bool = true
         }
       });
 
-      if(bool == false){ //if the node does not exist
+      //if the node does not exist
+      if(bool == false){ 
         var node = {x: 200, y: 200, name: nodeName}, //push it to nodes
         n = nodes.push(node);
 
-        // add links to any nearby nodes
-        nodes.forEach(function(target) {
-          if(connection === target.name){
-            links.push({source: node, target: target});
-          }
-        });      
+        addLinks(nodeName, connection); //add any links
+    
         restart();    
       }
       else if(bool == true){ //even if you don't add the node, you want to add new links on that node
-        var from = null,
-            to = null;
 
-        nodes.forEach(function(target){
-          if(target.name == nodeName){
-            from = target;
-          }
-          else if(target.name == connection){
-            to = target;
-          }
-        });
-
-        if(from != null && to != null){ // if both the to and the from exist, create that connection
-          links.push({source: from, target: to});
-        };
+        addLinks(nodeName, connection);
 
         restart();
-
       };
+    }
+
+    //Test to see if the two nodes exist, if they do, create a link.
+    function addLinks(toName, fromName){
+      var from = null,
+        to = null;
+
+      nodes.forEach(function(target){
+        if (target.name == toName){
+          to = target;
+        }
+        else if(target.name == fromName){
+          from = target;
+        };
+      });
+
+      if(from != null && to != null){
+        links.push({source: from, target: to});
+      };
+    }
+
+    function addApp(appName, serverArray){
+      var appNode = {x: 200, y: 200, name: appName}, //push it to nodes
+      an = nodes.push(appNode);
+
+      links.forEach(function(line){
+        nodes.forEach(function(server){
+          if(line.source.name == server.name){
+            line.source.name == appName ;           
+          }
+          else if(line.target.name == server.name){
+            line.target.name == appName;
+          }
+        });
+      });
+
+      nodes.forEach(function(target){
+        serverArray.forEach(function(server){
+          if(server.name == target.name){
+            remove(target);
+          }
+        })
+      });
+
+      restart();
     }
 
     //removes the node and any links that connect to that node, 
@@ -472,6 +554,10 @@ svg{
       }
       //redraw the nodes
       restart();
+    }
+
+    function group(application){
+
     }
 
     function mousemove() {

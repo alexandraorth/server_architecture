@@ -153,7 +153,7 @@ class App < Sinatra::Base
 		Server.all.to_json
 	end
 
-	get '/api/application' do
+	get '/api/appfirstApplication' do
 
 		$i = 0;
 
@@ -180,6 +180,10 @@ class App < Sinatra::Base
 			$i = $i + 1
 		end
 		
+		Application.all.to_json
+	end
+
+	get '/api/application' do
 		Application.all.to_json
 	end
 
