@@ -338,6 +338,7 @@ rect{
         applicationName = current.data("name")
 
         var serverArray;
+        var array = new Array();
 
         applicationCollection.forEach(function(application){
           if(application.get("name") == applicationName){
@@ -348,8 +349,16 @@ rect{
 
         console.log("the name of this application is " + applicationName)
 
-        addApp(applicationName, serverArray)
+        serverArray.forEach(function(d, index){
+          // console.log(nodesCollection)
+          var current = nodesCollection.where({server_id: d})
+          // console.log(current[0].get("hostname"));
+          array[index] = current[0].get("hostname");
+        })
 
+        console.log(array)
+
+        addApp(applicationName, array)
       }
     });
 
@@ -406,7 +415,7 @@ rect{
         .append("svg")
         .append("g")
         .attr("class", "svg-container")
-        .on("mousemove", mousemove);
+        .on("mousemove", mousemove)
 
     var nodes = force.nodes(),
         links = force.links(),
@@ -421,7 +430,7 @@ rect{
     var node_drag = d3.behavior.drag()
         .on("dragstart", dragstart)
         .on("drag", dragmove)
-        .on("dragend", dragend);
+        .on("dragend", dragend);        
 
     function sizeChange() {
       d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
@@ -499,29 +508,62 @@ rect{
     }
 
     function addApp(appName, serverArray){
+      console.log("HOMG WHALE SERVER ARRAY")
+      console.log(serverArray)
+
       var appNode = {x: 200, y: 200, name: appName}, //push it to nodes
       an = nodes.push(appNode);
 
-      links.forEach(function(line){
-        nodes.forEach(function(server){
-          if(line.source.name == server.name){
-            line.source.name == appName ;           
-          }
-          else if(line.target.name == server.name){
-            line.target.name == appName;
-          }
-        });
-      });
+      console.log("this is the node that was pushed")
+      console.log(appNode)
 
       nodes.forEach(function(target){
         serverArray.forEach(function(server){
-          if(server.name == target.name){
-            remove(target);
+          console.log(server + "::" + target.name)
+          if(server == target.name){
+            console.log("went into this REMOVE if")
+            console.log("this is the target")
+            console.log(target)
+            removeOnlyNode(target.name);
           }
         })
       });
 
+      for(var i = links.length -1; i >= 0; i--){
+        line = links[i]
+
+        serverArray.forEach(function(server){
+          if(line.source.name == server){
+            console.log("CREATED :: " + line.target.name + " ->>> " + appNode.name )
+            links.push({source: appNode, target: line.target});
+            removeLink(line.source.name, line.target.name);           
+          }
+          else if(line.target.name == server){
+            console.log("CREATED2 :: " + line.source.name + " ->>> " + appNode.name )
+            links.push({source: appNode, target: line.source});
+            removeLink(line.source.name, line.target.name);
+          }
+        });
+      };
+
+      console.log(links)
+
       restart();
+    }
+
+    function removeLink(toNode, fromNode){
+
+      console.log("AH GOT CALLED AND REMOVED THIS LINK" + toNode + " ::::::: " + fromNode);
+
+      for(var i = links.length -1; i >= 0; i--){
+        line = links[i]
+        if(toNode == line.source.name && fromNode == line.target.name){
+          links.splice(i,1);
+        }
+        else if (toNode == line.target.name && fromNode == line.source.name){
+          links.splice(i,1);
+        };
+      };
     }
 
     //removes the node and any links that connect to that node, 
@@ -555,6 +597,23 @@ rect{
       //redraw the nodes
       restart();
     }
+
+    function removeOnlyNode(nodeName){
+      console.log("went into remove only node")
+
+      nodes.forEach(function(target, index){
+        if(target.name == nodeName){
+          nodes.splice(index, 1);
+          // swap();
+
+          $(this).addClass("toRemove")
+        };
+      });
+
+      restart();
+    }
+
+
 
     function group(application){
 
