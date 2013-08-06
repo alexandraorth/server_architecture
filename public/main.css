@@ -1,0 +1,87 @@
+#slider-vertical{
+  margin-top: 8%;
+  margin-left: 10px;
+  position: absolute;
+  height: 80%;
+}
+
+#slider-vertical .ui-slider-range{
+  background: #428BCA;
+}
+
+#server-container{
+  width:12%;
+  height: 100%;
+  padding-left: 0px;
+  position: absolute;
+  left: 2%;
+}
+
+#container {
+  margin:2%;
+  padding:20px;
+  border:2px solid #d0d0d0;
+  border-radius: 5px;
+  }
+
+#container-container{
+  position: absolute;  
+  left: 14%;
+  width: 86%;
+  height: 90%;
+}
+
+#container-container text{
+  position: absolute;
+  right: 9%;
+}
+
+.selected{
+  background-color: #D9EDF7;
+  fill: blue;
+}
+
+.list-group{
+  width:100%;
+  height: 100%;
+  outline: 1px black;
+  overflow: auto;
+}
+
+svg{
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  fill: none;
+  stroke: black;
+  pointer-events: all;
+}
+
+.node {
+  fill: white;
+  stroke:black;
+  z-index: 4;
+}
+
+.node text{
+  fill: black;
+  font-size: 12;
+  color: black;
+  z-index: 5;
+}
+
+.cursor {
+  fill: none;
+  stroke: none;
+  pointer-events: none;
+}
+
+.link {
+  stroke: #999;
+  z-index: 4;
+}
+
+rect{
+  fill: white;
+  z-index: 5;
+}

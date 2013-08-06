@@ -2,6 +2,7 @@ require 'sinatra/base'
 require 'json'
 require 'mongoid'
 require 'httparty'
+require 'haml'
 require_relative 'models/server'
 require_relative 'models/timemodel'
 require_relative 'models/edge'
@@ -10,17 +11,13 @@ require_relative 'models/application'
 
 class App < Sinatra::Base
 	configure do 
-		set :public_folder, ENV['RACK_ENV'] == 'production' ? 'dist' : 'app'
+		# set :public_folder, ENV['RACK_ENV'] == 'production' ? 'dist' : 'app'
 		Mongoid.load!('mongoid.yml')
 		enable :logging
 	end
 
 	get '/' do 
-		File.read(File.join('views', 'index.html.erb'))
-	end
-
-	get '/timemodel' do
-		File.read(File.join('views', 'timemodel.html.erb'))
+		haml :index
 	end
 
 	before '/api*' do
