@@ -1,13 +1,3 @@
-
-<script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js' type='text/javascript'></script>
-<script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js' type='text/javascript'></script>
-<script src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js' type='text/javascript'></script>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css"></link>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
-
 <style>
 
 #slider-vertical{
@@ -21,14 +11,6 @@
   background: #428BCA;
 }
 
-/*#time-container{
-  width: 12%;
-  height: 100%;
-  padding-right: 0px;
-  left:2%;
-  position:absolute;
-}
-*/
 #server-container{
   width:12%;
   height: 100%;
@@ -115,12 +97,6 @@ rect{
 </script>
 
 <body onload="sizeChange()">
-
-<!--   <div id='time-container' >
-    <div class="list-group">
-      <li class="list-group-item">Time</li>
-    </div>
-  </div> -->
 
   <div id='server-container' >
     <div class="list-group">
@@ -243,8 +219,6 @@ rect{
 
       },
       toggleView: function(){
-        console.log("THIS WAS CLICKED HOMG SLEEP")
-
         applicationCollection = new ApplicationCollection();
         getApps = applicationCollection.fetch();
 
@@ -257,12 +231,11 @@ rect{
             $('#server-container .list-group').append("<a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a>");
           });
         });
+
+        $(".list-group-item").text("Applications")
+
       },
       updateSlider: function(event, ui){
-
-        // console.log(main_collection.length)
-        // console.log(ui.value)
-        console.log("this is being updated")
 
         var i = (ui.value/100)*main_collection.length
         i = Math.ceil(i)
@@ -270,28 +243,8 @@ rect{
         var currentModel = main_collection.models[i]
         click(currentModel.get("_id"), currentModel.get("time"))
 
+        $(".list-group-item").text("Servers")
       },
-      // buttonClick: function(e){
-      //   var collectionID = $(e.currentTarget).data("id") // get id of current button
-
-      //   // var collectionID = e;
-
-      //   console.log("this is the id from within button click" + collectionID)
-
-      //   nodesCollection = new NodesCollection([], {id: collectionID});
-      //   getNodes = nodesCollection.fetch();
-     
-      //   getNodes.done(function(){
-
-      //     $('#server-container .list-group a').remove()
-
-      //     nodesCollection.forEach(function(node){
-      //       $(this.el).append("This is the hostname " + node.get('hostname'));
-      //       $('#server-container .list-group').append("<a href='#' class='list-group-item' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
-      //     })
-
-      //   })
-      // },
 
       // Will toggle if the button has been selected or not
       // If selected, will delect and remove node
@@ -300,7 +253,7 @@ rect{
       nodeButtonClick: function(e){
         current = $(e.currentTarget)
 
-        var connectedid = current.data("timeid") // get id of current button
+        var time_id = current.data("timeid") // get id of current button
         var name = current.data("name") //get current hostname
 
         //toggle selected
@@ -308,24 +261,7 @@ rect{
 
         //if the node has been selected
         if(current.hasClass('selected') == true){
-          //Add node
-          add(name);
-
-          //fetch it's connections
-          var connectedNodesCollection = new ConnectedNodesCollection([],{id: connectedid, node_name: name })
-          getConnected = connectedNodesCollection.fetch()
-          getConnected.done(function(){
-
-            connectedNodesCollection.forEach(function(edge){
-
-              //add it's connections
-              if(edge.get('toID') === name)
-                add(edge.get('fromID'), edge.get('toID'))
-              else if(edge.get('fromID') === name)
-                add(edge.get('toID'), edge.get('fromID'))
-
-            })
-          })
+        	findAddEdges(time_id, name)
         }
         // if the node is not selected
         else{
@@ -342,22 +278,19 @@ rect{
 
         applicationCollection.forEach(function(application){
           if(application.get("name") == applicationName){
-            console.log(application.get("server_ids"))
+            // console.log(application.get("server_ids"))
             serverArray = application.get("server_ids")
           }
         })
 
-        console.log("the name of this application is " + applicationName)
-
         serverArray.forEach(function(d, index){
-          // console.log(nodesCollection)
-          var current = nodesCollection.where({server_id: d})
-          // console.log(current[0].get("hostname"));
-          array[index] = current[0].get("hostname");
+
+        	console.log("this is the d");
+        	console.log(d);
+
+        	var current = nodesCollection.where({server_id: d})
+        	array[index] = current[0].get("hostname");
         })
-
-        console.log(array)
-
         addApp(applicationName, array)
       }
     });
@@ -365,8 +298,6 @@ rect{
 
     function click(e, f){
       var collectionID = e;
-
-      console.log()
 
       nodesCollection = new NodesCollection([], {id: collectionID});
       getNodes = nodesCollection.fetch();
@@ -381,13 +312,36 @@ rect{
         });
       
         $('.time').text("Time: " + f)
+        $('.time').data("time_id" , {first: collectionID})
 
-      });
+       });
     }
+
+    function findAddEdges(time_id, name){
+	    //Add node
+	    add(name);
+
+	    //fetch it's connections
+	    var connectedNodesCollection = new ConnectedNodesCollection([],{id: time_id, node_name: name })
+	    getConnected = connectedNodesCollection.fetch()
+	    getConnected.done(function(){
+
+	    	connectedNodesCollection.forEach(function(edge){
+
+              //add it's connections
+              if(edge.get('toID') === name)
+              	add(edge.get('fromID'), edge.get('toID'))
+              else if(edge.get('fromID') === name)
+              	add(edge.get('toID'), edge.get('fromID'))
+
+          });
+	    });
+	}
+
 
     var main_collection = new TimemodelCollection();
     var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
-    var nodesCollection
+    var nodesCollection;
     var applicationCollection
 
     var timemodelView1 = new TimemodelView1();
@@ -403,13 +357,13 @@ rect{
     var fill = d3.scale.category20();
 
     var force = d3.layout.force()
-        // .size([width, height])
+        .size([1000, 1000])
         .nodes([]) // initialize with a single node
         .linkDistance(250)
         .charge(-60)
         .on("tick", tick)
         .linkDistance(100)
-        .gravity(.002);
+        .gravity(.04);
 
     var svg = d3.select("#container")
         .append("svg")
@@ -461,6 +415,7 @@ rect{
     //adds the node and the connection if it does not exist
     //if the node exists and the taget exists, adds only the connection
     function add(nodeName, connection){
+    	console.log("add is getting called for this node" + nodeName)
       var bool = new Boolean(); // boolean 
       bool = false
 
@@ -508,52 +463,68 @@ rect{
     }
 
     function addApp(appName, serverArray){
-      console.log("HOMG WHALE SERVER ARRAY")
-      console.log(serverArray)
-
       var appNode = {x: 200, y: 200, name: appName}, //push it to nodes
       an = nodes.push(appNode);
 
-      console.log("this is the node that was pushed")
-      console.log(appNode)
+      var toAdd = serverArray.slice(0);
 
-      nodes.forEach(function(target){
-        serverArray.forEach(function(server){
-          console.log(server + "::" + target.name)
+      //mark the nodes that need to be added to complete the application
+      for(var i = toAdd.length -1; i >= 0; i--){
+      	server = toAdd[i];
+      	nodes.forEach(function(target){
           if(server == target.name){
-            console.log("went into this REMOVE if")
-            console.log("this is the target")
-            console.log(target)
-            removeOnlyNode(target.name);
-          }
-        })
-      });
-
-      for(var i = links.length -1; i >= 0; i--){
-        line = links[i]
-
-        serverArray.forEach(function(server){
-          if(line.source.name == server){
-            console.log("CREATED :: " + line.target.name + " ->>> " + appNode.name )
-            links.push({source: appNode, target: line.target});
-            removeLink(line.source.name, line.target.name);           
-          }
-          else if(line.target.name == server){
-            console.log("CREATED2 :: " + line.source.name + " ->>> " + appNode.name )
-            links.push({source: appNode, target: line.source});
-            removeLink(line.source.name, line.target.name);
+          	toAdd.splice(i,1)          	
           }
         });
       };
 
-      console.log(links)
 
-      restart();
+      console.log("these are the nodes to add:")
+      console.log(toAdd)
+
+      toAdd.forEach(function(d){
+
+      	console.log("this is the time")
+      	var time_id = $('.time').data("time_id").first
+
+      	findAddEdges(time_id, d)
+      });
+
+      setTimeout(function(){
+	      nodes.forEach(function(target){
+	        serverArray.forEach(function(server, index){
+	          if(server == target.name){
+	            removeOnlyNode(target.name);
+	          }
+	        });
+	      });
+
+	      for(var i = links.length -1; i >= 0; i--){
+	        line = links[i]
+
+	        serverArray.forEach(function(server){
+	          if(line.source.name == server){
+	            links.push({source: appNode, target: line.target});
+	            removeLink(line.source.name, line.target.name);           
+	          }
+	          else if(line.target.name == server){
+	            links.push({source: appNode, target: line.source});
+	            removeLink(line.source.name, line.target.name);
+	          }
+	        });
+	      };
+
+
+	      // console.log(links)
+
+	      restart();
+
+	  }, 1000);
     }
 
     function removeLink(toNode, fromNode){
 
-      console.log("AH GOT CALLED AND REMOVED THIS LINK" + toNode + " ::::::: " + fromNode);
+      // console.log("AH GOT CALLED AND REMOVED THIS LINK" + toNode + " ::::::: " + fromNode);
 
       for(var i = links.length -1; i >= 0; i--){
         line = links[i]
@@ -603,7 +574,13 @@ rect{
 
       nodes.forEach(function(target, index){
         if(target.name == nodeName){
-          nodes.splice(index, 1);
+        
+        	console.log(nodes)
+        	console.log("went into the if statement that causes the remove")
+        	console.log(target.name)
+        	nodes.splice(index, 1);
+        	console.log(index)
+        	console.log(nodes)
           // swap();
 
           $(this).addClass("toRemove")
