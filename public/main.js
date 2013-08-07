@@ -99,8 +99,8 @@ var TimemodelView1 = Backbone.View.extend({
 console.log(jQuery.ui.version)
 
   $(function(){
-    $("#slider-vertical").slider({
-      orientation: 'vertical',
+    $("#slider-horizontal").slider({
+      orientation: 'horizontal',
       range: 'min',
       min: 0,
       max: 100,
@@ -130,13 +130,38 @@ console.log(jQuery.ui.version)
   },
   updateSlider: function(event, ui){
 
-    var i = (ui.value/100)*main_collection.length
-    i = Math.ceil(i)
+    console.log(nodes.length)
+    if(nodes.length != 0){
+      if(confirm("Changing the time will reset your nodes. Is this ok?")){
+        nodes = []
+        links = []
+        console.log("nodes is now empty. proof:")
+        console.log(nodes.length)
 
-    var currentModel = main_collection.models[i]
-    click(currentModel.get("_id"), currentModel.get("time"))
+        restart();
 
-    $(".list-group-item").text("Servers")
+        update();
+      }
+      else{
+        console.log("nothing happened")
+        $("#slider-vertical a").removeClass("ui-state-focus ui-state-active ui-state-hover")
+        console.log($("#slider-vertical a").attr("class"))
+      }
+    }    
+    else{
+      update();
+    }
+
+    function update(){
+      var i = (ui.value/100)*main_collection.length
+      i = Math.ceil(i)
+
+      var currentModel = main_collection.models[i]
+      click(currentModel.get("_id"), currentModel.get("time"))
+
+      $(".list-group-item").text("Servers")
+    }
+
   },
 
   // Will toggle if the button has been selected or not
@@ -239,6 +264,7 @@ var main_collection = new TimemodelCollection();
 var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
 var nodesCollection;
 var applicationCollection
+
 
 var timemodelView1 = new TimemodelView1();
 

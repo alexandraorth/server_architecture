@@ -1,3 +1,7 @@
+console.log($("#container").width())
+
+width = $("#container").width()
+height = $("#container").width()
 
 d3.select(window)
   .on("resize", sizeChange);
@@ -5,7 +9,7 @@ d3.select(window)
 var fill = d3.scale.category20();
 
 var force = d3.layout.force()
-    .size([500, 500])
+    .size([width/2, height/2])
     .nodes([]) // initialize with a single node
     .linkDistance(250)
     .charge(-60)
@@ -36,6 +40,9 @@ var node_drag = d3.behavior.drag()
 
 function sizeChange() {
   d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
+  width = $("#container").width()
+  height = $("#container").width()
+  d3.layout.force().size([width/2, height/2])
   // $("svg").height($("#container").width()*0.618);
 }
 
