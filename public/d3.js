@@ -1,12 +1,11 @@
 
-
 d3.select(window)
-      .on("resize", sizeChange);
+  .on("resize", sizeChange);
 
 var fill = d3.scale.category20();
 
 var force = d3.layout.force()
-    .size([1000, 1000])
+    .size([500, 500])
     .nodes([]) // initialize with a single node
     .linkDistance(250)
     .charge(-60)
@@ -39,7 +38,6 @@ function sizeChange() {
   d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
   // $("svg").height($("#container").width()*0.618);
 }
-
 
 //following three functions dragstart, dragmove and dragend
 // will allow nodes to be "held" in place when you click them
@@ -81,6 +79,10 @@ function add(nodeName, connection){
     n = nodes.push(node);
 
     addLinks(nodeName, connection); //add any links
+
+    console.log("went into if. should restart")
+    console.log("this is nodes")
+    console.log(nodes)
 
     restart();    
   }
@@ -260,6 +262,8 @@ function tick() {
 
 function restart() {
 
+  console.log("went into restart")
+
   link = link.data(links);
 
   link.exit().remove();
@@ -281,6 +285,7 @@ function restart() {
   .attr("x", 10)
   .attr("dy", ".31em")
   .text(function(target){
+    console.log("just went into text" + target.name)
     return target.name;
   })
 
@@ -288,3 +293,4 @@ function restart() {
 
   force.start();
 }
+

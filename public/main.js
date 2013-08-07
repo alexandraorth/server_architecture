@@ -1,4 +1,6 @@
-
+$("button").click(function(){
+  console.log("this click work")
+})
 
 var TimemodelApp = {
   Models: {},
@@ -69,7 +71,7 @@ var ConnectedNodesCollection = Backbone.Collection.extend({
 })
 
 var TimemodelView1 = Backbone.View.extend({
-  el: $('body'),
+  el: $('html'),
   events: {
     // 'click #time-container .list-group a': 'buttonClick',
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
@@ -94,16 +96,22 @@ var TimemodelView1 = Backbone.View.extend({
     var self = this;
     var length = main_collection.length
 
-    $( "#slider-vertical" ).slider({
+console.log(jQuery.ui.version)
+
+  $(function(){
+    $("#slider-vertical").slider({
       orientation: 'vertical',
       range: 'min',
       min: 0,
       max: 100,
       slide: self.updateSlider
     });
-
+})
   },
   toggleView: function(){
+
+    console.log("The view was toggled")
+
     applicationCollection = new ApplicationCollection();
     getApps = applicationCollection.fetch();
 
@@ -138,6 +146,8 @@ var TimemodelView1 = Backbone.View.extend({
   nodeButtonClick: function(e){
     current = $(e.currentTarget)
 
+    console.log("node button was clicked")
+
     var time_id = current.data("timeid") // get id of current button
     var name = current.data("name") //get current hostname
 
@@ -154,6 +164,7 @@ var TimemodelView1 = Backbone.View.extend({
     };
   },
   appButtonClick: function(e){
+
     current = $(e.currentTarget)
 
     applicationName = current.data("name")
@@ -230,9 +241,5 @@ var nodesCollection;
 var applicationCollection
 
 var timemodelView1 = new TimemodelView1();
-
-
-
-
 
 

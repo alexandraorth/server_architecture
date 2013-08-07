@@ -2,7 +2,7 @@ require 'sinatra/base'
 require 'json'
 require 'mongoid'
 require 'httparty'
-require 'haml'
+require 'erb'
 require_relative 'models/server'
 require_relative 'models/timemodel'
 require_relative 'models/edge'
@@ -17,7 +17,11 @@ class App < Sinatra::Base
 	end
 
 	get '/' do 
-		haml :index
+		erb :index
+	end
+
+	get '/timemodel' do
+		File.read(File.join('views', 'timemodel.html.erb'))
 	end
 
 	before '/api*' do
