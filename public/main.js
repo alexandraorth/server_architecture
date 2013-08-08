@@ -76,7 +76,9 @@ var TimemodelView1 = Backbone.View.extend({
     // 'click #time-container .list-group a': 'buttonClick',
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
     'click #server-container .list-group .appButton': 'appButtonClick',
-    'click .toggle': 'toggleView'
+    'click .toggle': 'toggleView',
+    'click .clear': 'clear',
+    'click .removeSingleNodes' : 'removeSingles'
   },
   initialize: function(){
     _.bindAll(this, 'render')
@@ -108,6 +110,9 @@ console.log(jQuery.ui.version)
     });
   })
   },
+  removeSingles: function(){
+    removeSingleNodes();
+  },
   toggleView: function(){
 
     console.log("The view was toggled")
@@ -127,6 +132,12 @@ console.log(jQuery.ui.version)
 
     $(".list-group-item").text("Applications")
 
+  },
+  clear: function(){
+    nodes = [];
+    links = [];
+    removeSelected();
+    restart();
   },
   updateSlider: function(event, ui){
 
@@ -213,7 +224,8 @@ console.log(jQuery.ui.version)
     	console.log(d);
 
     	var current = nodesCollection.where({server_id: d})
-    	array[index] = current[0].get("hostname");
+      if(current.length > 0)
+        array[index] = current[0].get("hostname");
     })
     addApp(applicationName, array)
   }
@@ -242,6 +254,24 @@ function click(e, f){
 
    });
 }
+
+function removeSelected(){
+    $(".nodeButton").each(function(){
+      console.log(this)
+      if((this).attr("class")){
+        console.log(this)
+        $(this).removeAttr("class", "selected")
+      }
+    })
+
+
+    $(".appButton").each(function(){
+      if((this).attr("class")){
+        console.log(this)
+        $(this).removeAttr("class", "selected")
+      }
+    })
+  }
 
 function findAddEdges(time_id, name){
   //Add node

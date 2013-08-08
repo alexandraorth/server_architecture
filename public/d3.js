@@ -115,11 +115,6 @@ function addLinks(toName, fromName){
 }
 
 function addApp(appName, serverArray){
-  var appNode = {x: 200, y: 200, name: appName, type: "app"}, //push it to nodes
-  an = nodes.push(appNode);
-
-  restart();
-
   var toAdd = serverArray.slice(0);
 
   //mark the nodes that need to be added to complete the application
@@ -129,8 +124,29 @@ function addApp(appName, serverArray){
       if(server == target.name){
       	toAdd.splice(i,1)          	
       }
+      // if(target.type == "app"){
+      //   console.log("these are the nodesContained:")
+      //   console.log(target.nodesContained)
+      //   target.nodesContained.forEach(function(contained){
+      //     console.log(contained)
+      //     if(server == contained){
+      //       console.log("REMOVING")
+      //       toAdd.splice(i,1)           
+      //     }
+      //   });
+      // }
     });
   };
+
+    var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}, //push it to nodes
+  an = nodes.push(appNode);
+
+  console.log(appNode)
+
+  restart();
+
+  console.log("nodes to add:")
+  console.log(toAdd)
 
   toAdd.forEach(function(d){
    var time_id = $('.time').data("time_id").first
@@ -167,7 +183,7 @@ function addApp(appName, serverArray){
 
     restart();
 
-}, 1000);
+  }, 1000);
 }
 
 function removeLink(toNode, fromNode){
@@ -232,9 +248,16 @@ function removeOnlyNode(nodeName){
   restart();
 }
 
+function removeSingleNodes(){
 
+  for(var i = nodes.length - 1; i >= 0; i--){
+    target = nodes[i]
+    if(target.type == "node"){
+      remove(target.name)
+    }
+  }
 
-function group(application){
+  restart();
 
 }
 
