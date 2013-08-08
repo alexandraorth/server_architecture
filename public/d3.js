@@ -230,7 +230,7 @@ function remove(nodeName){
     }
   }
   //redraw the nodes
-  restart();
+  // restart();
 }
 
 function removeOnlyNode(nodeName){

@@ -73,10 +73,9 @@ var ConnectedNodesCollection = Backbone.Collection.extend({
 var TimemodelView1 = Backbone.View.extend({
   el: $('html'),
   events: {
-    // 'click #time-container .list-group a': 'buttonClick',
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
     'click #server-container .list-group .appButton': 'appButtonClick',
-    'click .toggle': 'toggleView',
+    'click .serverView':'serverContainerClick',
     'click .clear': 'clear',
     'click .removeSingleNodes' : 'removeSingles'
   },
@@ -93,49 +92,35 @@ var TimemodelView1 = Backbone.View.extend({
       })
 
       $('#timemodel-container').html($(this.el).html());
+
+      click(main_collection.models[0].get('_id'), main_collection.models[0].get('time'))
     })
 
     var self = this;
     var length = main_collection.length
 
-console.log(jQuery.ui.version)
+    console.log(jQuery.ui.version)
 
-  $(function(){
-    $("#slider-horizontal").slider({
-      orientation: 'horizontal',
-      range: 'min',
-      min: 0,
-      max: 100,
-      slide: self.updateSlider
-    });
-  })
+    $(function(){
+      $("#slider-horizontal").slider({
+        orientation: 'horizontal',
+        range: 'min',
+        min: 0,
+        max: 100,
+        slide: self.updateSlider
+      });
+    })
+
   },
   removeSingles: function(){
     removeSingleNodes();
   },
-  toggleView: function(){
-
-    console.log("The view was toggled")
-
-    applicationCollection = new ApplicationCollection();
-    getApps = applicationCollection.fetch();
-
-    getApps.done(function(){
-
-      $('#server-container .list-group a').remove()
-
-      applicationCollection.forEach(function(application){
-        // $(this.el).append("This is the hostname " + node.get('hostname'));
-        $('#server-container .list-group').append("<a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a>");
-      });
-    });
-
-    $(".list-group-item").text("Applications")
-
-  },
   clear: function(){
-    nodes = [];
-    links = [];
+  
+    for(var i = nodes.length - 1; i >= 0; i--){
+      remove(nodes[i].name)
+    }
+
     removeSelected();
     restart();
   },
@@ -169,8 +154,6 @@ console.log(jQuery.ui.version)
 
       var currentModel = main_collection.models[i]
       click(currentModel.get("_id"), currentModel.get("time"))
-
-      $(".list-group-item").text("Servers")
     }
 
   },
@@ -197,6 +180,7 @@ console.log(jQuery.ui.version)
     // if the node is not selected
     else{
       remove(name)
+      restart();
     };
   },
   appButtonClick: function(e){
@@ -228,6 +212,9 @@ console.log(jQuery.ui.version)
         array[index] = current[0].get("hostname");
     })
     addApp(applicationName, array)
+  },
+  serverContainerClick: function(){
+
   }
 });
 
@@ -256,19 +243,20 @@ function click(e, f){
 }
 
 function removeSelected(){
+  console.log("removeSelected was called")
+
     $(".nodeButton").each(function(){
       console.log(this)
-      if((this).attr("class")){
+      if($(this).attr("class")){
         console.log(this)
-        $(this).removeAttr("class", "selected")
+        $(this).removeClass("selected")
+
       }
     })
 
-
-    $(".appButton").each(function(){
-      if((this).attr("class")){
-        console.log(this)
-        $(this).removeAttr("class", "selected")
+    $(".appButton").each(function(target){
+      if($(this).attr("class")){
+        $(this).removeAttr("selected")
       }
     })
   }
@@ -294,13 +282,42 @@ function findAddEdges(time_id, name){
   });
 }
 
+function populateApplications(){
+    applicationCollection = new ApplicationCollection();
+    getApps = applicationCollection.fetch();
+
+    getApps.done(function(){
+
+      $('#application-container .list-group a').remove()
+
+      applicationCollection.forEach(function(application){
+        $('#application-container .list-group').append("<a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a>");
+      });
+    });
+}
+
 
 var main_collection = new TimemodelCollection();
 var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
+var applicationCollection;
 var nodesCollection;
-var applicationCollection
 
 
 var timemodelView1 = new TimemodelView1();
 
+populateApplications();
+
+
+$(".application-menu").click(function(){
+  console.log("button was clicked")
+  $("#server-container").css("display", "none")
+  $("#application-container").css("display", "block")
+  $(".server-menu-text-box").css("display", "none")
+})
+
+$(".server-menu").click(function(){
+  $("#application-container").css("display", "none")
+  $("#server-container").css("display", "block")
+  $(".server-menu-text-box").css("display", "block")
+})
 

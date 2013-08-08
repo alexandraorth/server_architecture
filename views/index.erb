@@ -1,12 +1,25 @@
- <div id='server-container' >
+
+<div class="navigation">
+  <ul class="nav nav-tabs">
+    <li><a href="#" class="server-menu">Servers</a></li>
+    <li><a href="#" class="application-menu" >Apps</a></li>
+    <input type="text" class="form-control server-menu-text-box" placeholder="Filter...">
+  </ul>
+
+
+  <div id='server-container' >
     <div class="list-group">
-      <li class="list-group-item">Servers</li>
     </div>
   </div>
 
+  <div id='application-container' >
+    <div class="list-group">
+    </div>
+  </div>
+</div>
+
   <div id="container-container">
     <div id='container'>
-    <button type="button" class="btn btn-primary btn-small toggle" >Application View</button>
     <button type="button" class="btn btn-primary btn-small clear" > Clear </button>
     <button type="button" class="btn btn-primary btn-small removeSingleNodes" > Remove Single Nodes </button>
 
