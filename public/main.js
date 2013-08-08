@@ -106,7 +106,7 @@ console.log(jQuery.ui.version)
       max: 100,
       slide: self.updateSlider
     });
-})
+  })
   },
   toggleView: function(){
 
@@ -192,6 +192,9 @@ console.log(jQuery.ui.version)
 
     current = $(e.currentTarget)
 
+    current.toggleClass('selected');
+
+
     applicationName = current.data("name")
 
     var serverArray;
@@ -232,7 +235,9 @@ function click(e, f){
       $('#server-container .list-group').append("<a href='#' class='list-group-item nodeButton' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
     });
   
-    $('.time').text("Time: " + f)
+    var currentTime = new Date(1000*f);
+
+    $('.time').text("Time: " + currentTime)
     $('.time').data("time_id" , {first: collectionID})
 
    });

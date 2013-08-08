@@ -1,5 +1,3 @@
-console.log($("#container").width())
-
 width = $("#container").width()
 height = $("#container").width()
 
@@ -14,7 +12,7 @@ var force = d3.layout.force()
     .linkDistance(250)
     .charge(-60)
     .on("tick", tick)
-    .linkDistance(100)
+    .linkDistance(150)
     .gravity(.04);
 
 var svg = d3.select("#container")
@@ -69,7 +67,7 @@ function dragend(d, i) {
 //adds the node and the connection if it does not exist
 //if the node exists and the taget exists, adds only the connection
 function add(nodeName, connection){
-	console.log("add is getting called for this node" + nodeName)
+	// console.log("add is getting called for this node" + nodeName)
   var bool = new Boolean(); // boolean 
   bool = false
 
@@ -82,14 +80,10 @@ function add(nodeName, connection){
 
   //if the node does not exist
   if(bool == false){ 
-    var node = {x: 200, y: 200, name: nodeName}, //push it to nodes
+    var node = {x: 200, y: 200, name: nodeName, type: "node"}, //push it to nodes
     n = nodes.push(node);
 
     addLinks(nodeName, connection); //add any links
-
-    console.log("went into if. should restart")
-    console.log("this is nodes")
-    console.log(nodes)
 
     restart();    
   }
@@ -121,8 +115,10 @@ function addLinks(toName, fromName){
 }
 
 function addApp(appName, serverArray){
-  var appNode = {x: 200, y: 200, name: appName}, //push it to nodes
+  var appNode = {x: 200, y: 200, name: appName, type: "app"}, //push it to nodes
   an = nodes.push(appNode);
+
+  restart();
 
   var toAdd = serverArray.slice(0);
 
@@ -136,14 +132,8 @@ function addApp(appName, serverArray){
     });
   };
 
-
-  console.log("these are the nodes to add:")
-  console.log(toAdd)
-
   toAdd.forEach(function(d){
-
-  	console.log("this is the time")
-  	var time_id = $('.time').data("time_id").first
+   var time_id = $('.time').data("time_id").first
 
   	findAddEdges(time_id, d)
   });
@@ -232,13 +222,7 @@ function removeOnlyNode(nodeName){
 
   nodes.forEach(function(target, index){
     if(target.name == nodeName){
-    
-    	console.log(nodes)
-    	console.log("went into the if statement that causes the remove")
-    	console.log(target.name)
     	nodes.splice(index, 1);
-    	console.log(index)
-    	console.log(nodes)
       // swap();
 
       $(this).addClass("toRemove")
@@ -268,9 +252,6 @@ function tick() {
 }
 
 function restart() {
-
-  console.log("went into restart")
-
   link = link.data(links);
 
   link.exit().remove();
@@ -279,25 +260,45 @@ function restart() {
 
   rect = rect.data(nodes, function(d){return d.name})
 
-  var g = rect.enter().append('svg:g');
-
-  g.attr("class", "node")
-  .call(node_drag);
-
-  g.append("rect", ".cursor")
-  .attr("height", 20)
-  .attr("width", 50);
-
-  g.append("svg:text")
-  .attr("x", 10)
-  .attr("dy", ".31em")
-  .text(function(target){
-    console.log("just went into text" + target.name)
-    return target.name;
-  })
-
   rect.exit().remove();
 
+  if(nodes[nodes.length -1].type == "node"){ 
+
+    var g = rect.enter().append('svg:g');
+
+    g.attr("class", "node")
+    .call(node_drag);
+
+    g.append("svg:circle", ".cursor")
+    .attr("r", 5)
+    .attr("fill", "#7DBF3B");
+
+    g.append("svg:text")
+    .attr("x", 10)
+    .attr("dy", ".31em")
+    .text(function(target){
+      return target.name;
+    })
+  }
+  else if(nodes[nodes.length -1].type == "app"){
+    var g = rect.enter().append('svg:g');
+
+    g.attr("class", "node")
+    .call(node_drag);
+
+    g.append("svg:circle", ".cursor")
+    .attr("r", 13)
+    .attr("fill", "#D9EDF7");
+
+    g.append("svg:text")
+    .attr("x", 10)
+    .attr("dy", ".31em")
+    .text(function(target){
+      console.log("just went into text" + target.name)
+      return target.name;
+    })
+
+  }
   force.start();
 }
 

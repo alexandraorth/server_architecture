@@ -5,6 +5,17 @@
   width: 70%;
 }
 
+#tooltip{
+  position: absolute;
+  top: 25;
+  left: -10;
+  display: none;
+}
+
+.slider-here{
+  width: 70%;
+}
+
 ul > li{
   display: inline-block;
   list-style-type: none;
@@ -12,10 +23,10 @@ ul > li{
  }
 
 #slider-horizontal{
-  width: 70%;
+  width: 700px;
 }
 
-#slider-vertical .ui-slider-range{
+#slider-horizontal .ui-slider-range{
   background: #428BCA;
 }
 
@@ -63,22 +74,23 @@ svg{
   display: block;
   width: 100%;
   margin: 0 auto;
-  fill: none;
   stroke: black;
   pointer-events: all;
 }
 
 .node {
-  fill: white;
-  stroke:black;
+/*  fill: white;
+*/  stroke:black;
   z-index: 4;
 }
 
 .node text{
+  position: absolute;
   fill: black;
   font-size: 12;
   color: black;
   z-index: 5;
+  top: 50px;
 }
 
 .cursor {
@@ -88,11 +100,11 @@ svg{
 }
 
 .link {
-  stroke: #999;
+  stroke: #9ecae1;
   z-index: 4;
 }
 
-rect{
-  fill: white;
-  z-index: 5;
+circle{
+/*  fill: white;
+*/  z-index: 5;
 }
