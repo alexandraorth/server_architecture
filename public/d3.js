@@ -9,11 +9,10 @@ var fill = d3.scale.category20();
 var force = d3.layout.force()
     .size([width/2, height/2])
     .nodes([]) // initialize with a single node
-    .linkDistance(250)
-    .charge(-60)
+    .linkDistance(200)
+    .charge(-90)
     .on("tick", tick)
-    .linkDistance(150)
-    .gravity(.04);
+    .gravity(.03);
 
 var svg = d3.select("#container")
     .append("svg")
@@ -80,7 +79,7 @@ function add(nodeName, connection){
 
   //if the node does not exist
   if(bool == false){ 
-    var node = {x: 200, y: 200, name: nodeName, type: "node"}, //push it to nodes
+    var node = {x: 300, y: 200, name: nodeName, type: "node"}, //push it to nodes
     n = nodes.push(node);
 
     addLinks(nodeName, connection); //add any links
@@ -205,14 +204,7 @@ function removeLink(toNode, fromNode){
 // does not remove connecting nodes.
 function remove(nodeName){
   //find the node that you want to remove
-  nodes.forEach(function(target, index){
-    if(target.name == nodeName){
-      nodes.splice(index, 1);
-      // swap();
-
-      $(this).addClass("toRemove")
-    };
-  });
+  removeOnlyNode(nodeName);
 
   //Iterate in reverse. This way the indeces do not change
   //as you iterate through and you can see/remove all the links.
@@ -248,6 +240,16 @@ function removeOnlyNode(nodeName){
   restart();
 }
 
+function removeApp(appName, serverArray){
+  remove(appName)
+
+  serverArray.forEach(function(d){
+   var time_id = $('.time').data("time_id").first
+
+    findAddEdges(time_id, d)
+  });
+}
+
 
 function mousemove() {
   cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
@@ -259,7 +261,14 @@ function tick() {
   .attr("x2", function(d) { return d.target.x; })
   .attr("y2", function(d) { return d.target.y; });
 
-  rect.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  rect.attr("transform", function(d) { 
+    if (d.type == "app"){
+      return "translate(" + Math.max(13, Math.min(width - 13, d.x)) + "," + Math.max(13, Math.min(height - 13, d.y)) + ")"
+    }
+    else if(d.type == "node"){
+      return "translate(" + Math.max(5, Math.min(width - 5, d.x)) + "," + Math.max(5, Math.min(height - 5, d.y)) + ")"
+    }
+  });
 }
 
 function restart() {
@@ -278,7 +287,10 @@ function restart() {
     var g = rect.enter().append('svg:g');
 
     g.attr("class", "node")
-    .call(node_drag);
+    .call(node_drag)
+    // .on("mouseover", function(d){
+    //   console.log(d.name);
+    // });
 
     g.append("svg:circle", ".cursor")
     .attr("r", 5)
@@ -296,7 +308,10 @@ function restart() {
     var g = rect.enter().append('svg:g');
 
     g.attr("class", "node")
-    .call(node_drag);
+    .call(node_drag)
+    .on("mouseover", function(d){
+      console.log(d.nodesContained);
+    });
 
     g.append("svg:circle", ".cursor")
     .attr("r", 13)

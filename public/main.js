@@ -83,7 +83,8 @@ var TimemodelView1 = Backbone.View.extend({
 
       main_collection.forEach(function(model){
         $(this.el).append("This is the time " + model.get('time'));
-        $('#time-container .list-group').append("<a href='#' class='list-group-item' class='test_button' data-id='" + model.get('_id') + "'>" + model.get('time') + "</a>")
+        $('#time-container .list-group').append("<a href='#' class='list-group-item' class='test_button' data-id='" 
+          + model.get('_id') + "'>" + model.get('time') + "</a>")
       })
 
       $('#timemodel-container').html($(this.el).html());
@@ -218,7 +219,6 @@ var TimemodelView1 = Backbone.View.extend({
     }
     // if the node is not selected
     else{
-      console.log("was supposed to have removed " + name)
       remove(name)
       restart();
     };
@@ -251,7 +251,16 @@ var TimemodelView1 = Backbone.View.extend({
       if(current.length > 0)
         array[index] = current[0].get("hostname");
     })
-    addApp(applicationName, array)
+
+    //if the node has been selected
+    if(current.hasClass('selected') == true){
+      addApp(applicationName, array)
+    }
+    // if the node is not selected
+    else{
+      removeApp(applicationName, array)
+      restart();
+    };
   }
 });
 
@@ -268,7 +277,8 @@ function click(e, f){
 
     nodesCollection.forEach(function(node){
       $(this.el).append("This is the hostname " + node.get('hostname'));
-      $('#server-container .list-group').append("<li><a href='#' class='list-group-item nodeButton' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
+      $('#server-container .list-group').append("<li><a href='#' class='list-group-item nodeButton' data-name='"
+        + node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
     });
   
     var currentTime = new Date(1000*f);
@@ -324,7 +334,8 @@ function populateApplications(){
       $('#application-container .list-group li').remove()
 
       applicationCollection.forEach(function(application){
-        $('#application-container .list-group').append("<li><a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a></li>");
+        $('#application-container .list-group').append("<li><a href='#' class='list-group-item appButton' data-name='"+ 
+          application.get('name') + "'>" + application.get('name') + "</a></li>");
       });
     });
 }
