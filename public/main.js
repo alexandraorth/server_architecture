@@ -1,7 +1,3 @@
-$("button").click(function(){
-  console.log("this click work")
-})
-
 var TimemodelApp = {
   Models: {},
   Collections: {},
@@ -74,7 +70,7 @@ var TimemodelView1 = Backbone.View.extend({
   el: $('html'),
   events: {
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
-    'click #server-container .list-group .appButton': 'appButtonClick',
+    'click #application-container .list-group .appButton': 'appButtonClick',
     'click .serverView':'serverContainerClick',
     'click .clear': 'clear',
     'click .removeSingleNodes' : 'removeSingles'
@@ -98,8 +94,6 @@ var TimemodelView1 = Backbone.View.extend({
 
     var self = this;
     var length = main_collection.length
-
-    console.log(jQuery.ui.version)
 
     $(function(){
       $("#slider-horizontal").slider({
@@ -125,24 +119,15 @@ var TimemodelView1 = Backbone.View.extend({
     restart();
   },
   updateSlider: function(event, ui){
-
-    console.log(nodes.length)
-
     if(nodes.length != 0){
       if(confirm("Changing the time will reset your nodes. Is this ok?")){
         nodes = []
         links = []
-        console.log("nodes is now empty. proof:")
-        console.log(nodes.length)
-
         restart();
-
         update();
       }
       else{
-        console.log("nothing happened")
         $("#slider-vertical a").removeClass("ui-state-focus ui-state-active ui-state-hover")
-        console.log($("#slider-vertical a").attr("class"))
       }
     }    
     else{
@@ -180,6 +165,7 @@ var TimemodelView1 = Backbone.View.extend({
     }
     // if the node is not selected
     else{
+      console.log("was supposed to have removed " + name)
       remove(name)
       restart();
     };
@@ -213,9 +199,6 @@ var TimemodelView1 = Backbone.View.extend({
         array[index] = current[0].get("hostname");
     })
     addApp(applicationName, array)
-  },
-  serverContainerClick: function(){
-
   }
 });
 
@@ -244,23 +227,19 @@ function click(e, f){
 }
 
 function removeSelected(){
-  console.log("removeSelected was called")
+  $(".nodeButton").each(function(){
+    if($(this).attr("class")){
+      $(this).removeClass("selected")
 
-    $(".nodeButton").each(function(){
-      console.log(this)
-      if($(this).attr("class")){
-        console.log(this)
-        $(this).removeClass("selected")
+    }
+  })
 
-      }
-    })
-
-    $(".appButton").each(function(target){
-      if($(this).attr("class")){
-        $(this).removeAttr("selected")
-      }
-    })
-  }
+  $(".appButton").each(function(target){
+    if($(this).attr("class")){
+      $(this).removeClass("selected")
+    }
+  })
+}
 
 function findAddEdges(time_id, name){
   //Add node
@@ -310,7 +289,6 @@ populateApplications();
 
 
 $(".application-menu").click(function(){
-  console.log("button was clicked")
   $("#server-container").css("display", "none")
   $("#application-container").css("display", "block")
   $(".app-menu-text-box").css("display", "block")

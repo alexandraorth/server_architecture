@@ -8,6 +8,7 @@ require_relative 'models/timemodel'
 require_relative 'models/edge'
 require_relative 'models/node'
 require_relative 'models/application'
+require_relative 'models/serverset'
 
 class App < Sinatra::Base
 	configure do 
@@ -182,6 +183,37 @@ class App < Sinatra::Base
 		end
 		
 		Application.all.to_json
+	end
+
+
+	get '/api/appfirstServerSets' do
+
+		$i = 0;
+
+		auth = {:username => "admin@appfirst.com", :password => "586854651"}
+
+		url = "https://wwws.appfirst.com/api/server_sets"
+
+		response = HTTParty.get(url, 
+			:basic_auth => auth,
+			:headers => {'Content-Type' => 'application/json'})
+
+		json = JSON.parse(response.to_s().gsub('=>', ':'))
+
+		while json[$i] != nil do
+			new_set = Serverset.create
+
+			new_set.update_attributes(
+				name: json[$i]["name"],
+				server_ids: json[$i]["applications"]
+				)
+
+			logger.info(new_set)
+
+			$i = $i + 1
+		end
+		
+		Serverset.all.to_json
 	end
 
 	get '/api/application' do
