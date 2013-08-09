@@ -34,7 +34,7 @@
 
 .navigation{
   width:14%;
-  border: solid;
+  border-right: solid;
   border-width: 1px;
   border-color: rgb(221, 221, 221);
   height: 100%;
@@ -47,15 +47,13 @@
   height: 100%;
   display: none;
   position: absolute;
-  overflow: scroll;
 }
 
 #server-container{
-  overflow: scroll;
   display: block;
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 87%;
 }
   
 .nav{
@@ -63,9 +61,31 @@
 }
 
 .nav > li{
-  margin-left: 2%;
+  width: 50%;
+  text-align: center;
   display: inline;
-  padding-left: 0px;
+  border-top:solid;
+  border-right:solid;
+  border-left:solid;
+  border-color: rgb(221, 221, 221);
+  border-width: 1px;
+  border-radius:5px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+#server-container #search_list li a{
+  border-right: none;
+  border-left: none;
+  border-top: none;
+  border-radius: 0;
+}
+
+#application-container #app_search_list li a{
+  border-right: none;
+  border-left: none;
+  border-top: none;
+  border-radius: 0;
 }
 
 #container {
@@ -100,6 +120,25 @@
   outline: 1px black;
   overflow: auto;
 }
+
+.nodeButton{
+  overflow: hidden;
+}
+
+.appButton{
+  overflow: hidden;
+}
+
+.toggleButton{
+  width: 100%;
+}
+
+.toggleButtonInner{
+  width: 100%;
+/*  text-align: left;
+*/}
+
+
 
 svg{
   display: block;

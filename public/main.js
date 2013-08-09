@@ -71,7 +71,6 @@ var TimemodelView1 = Backbone.View.extend({
   events: {
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
     'click #application-container .list-group .appButton': 'appButtonClick',
-    'click .serverView':'serverContainerClick',
     'click .clear': 'clear',
     'click .removeSingleNodes' : 'removeSingles'
   },
@@ -107,7 +106,61 @@ var TimemodelView1 = Backbone.View.extend({
 
   },
   removeSingles: function(){
-    removeSingleNodes();
+
+    //if you want to hide servers
+    if($('.removeSingleNodes').attr('check') == 'false'){
+      $('.removeSingleNodes').attr('check', 'true');
+
+      //go through each node
+      $('.node').each(function(target){
+        //to find if it is a server
+        if($(this).children()[0].r.animVal.value <= 5){
+          $(this).css("display", "none");
+
+          //save reference to the node, os you can test for location
+          var holder = this
+
+          //hide any links that have a starting point in the same location as the node
+          $('.link').each(function(line){
+            if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x1")
+              ||
+              $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x2")){
+              $(this).css("display", "none")
+            }
+          });
+        }
+      });
+    }
+
+    //if you want to show servers
+    else{
+
+      $('.removeSingleNodes').attr('check', 'false');
+
+      $('.node').each(function(target){
+        if($(this).children()[0].r.animVal.value <= 5){
+          $(this).css("display", "block");
+
+          var holder = this
+
+          //show links
+          $('.link').each(function(line){
+            if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x1")
+              ||
+              $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x2")){
+              $(this).css("display", "block")
+            }
+          }); 
+        }
+      });
+    }
+
+    restart();
+    
   },
   clear: function(){
   
@@ -303,4 +356,7 @@ $(".server-menu").click(function(){
 })
 
 
-
+$(function(){
+  $('#search_input').fastLiveFilter('#search_list');
+  $('#app_search_input').fastLiveFilter('#app_search_list');
+})

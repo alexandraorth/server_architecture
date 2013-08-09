@@ -248,18 +248,6 @@ function removeOnlyNode(nodeName){
   restart();
 }
 
-function removeSingleNodes(){
-
-  for(var i = nodes.length - 1; i >= 0; i--){
-    target = nodes[i]
-    if(target.type == "node"){
-      remove(target.name)
-    }
-  }
-
-  restart();
-
-}
 
 function mousemove() {
   cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
@@ -304,6 +292,7 @@ function restart() {
     })
   }
   else if(nodes[nodes.length -1].type == "app"){
+
     var g = rect.enter().append('svg:g');
 
     g.attr("class", "node")
