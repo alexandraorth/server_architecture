@@ -127,6 +127,7 @@ var TimemodelView1 = Backbone.View.extend({
   updateSlider: function(event, ui){
 
     console.log(nodes.length)
+
     if(nodes.length != 0){
       if(confirm("Changing the time will reset your nodes. Is this ok?")){
         nodes = []
@@ -227,11 +228,11 @@ function click(e, f){
 
   getNodes.done(function(){
 
-    $('#server-container .list-group a').remove()
+    $('#server-container .list-group li').remove()
 
     nodesCollection.forEach(function(node){
       $(this.el).append("This is the hostname " + node.get('hostname'));
-      $('#server-container .list-group').append("<a href='#' class='list-group-item nodeButton' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a>");
+      $('#server-container .list-group').append("<li><a href='#' class='list-group-item nodeButton' data-name='"+ node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
     });
   
     var currentTime = new Date(1000*f);
@@ -320,4 +321,6 @@ $(".server-menu").click(function(){
   $("#server-container").css("display", "block")
   $(".server-menu-text-box").css("display", "block")
 })
+
+
 
