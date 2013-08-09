@@ -289,10 +289,10 @@ function populateApplications(){
 
     getApps.done(function(){
 
-      $('#application-container .list-group a').remove()
+      $('#application-container .list-group li').remove()
 
       applicationCollection.forEach(function(application){
-        $('#application-container .list-group').append("<a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a>");
+        $('#application-container .list-group').append("<li><a href='#' class='list-group-item appButton' data-name='"+ application.get('name') + "'>" + application.get('name') + "</a></li>");
       });
     });
 }
@@ -313,12 +313,14 @@ $(".application-menu").click(function(){
   console.log("button was clicked")
   $("#server-container").css("display", "none")
   $("#application-container").css("display", "block")
+  $(".app-menu-text-box").css("display", "block")
   $(".server-menu-text-box").css("display", "none")
 })
 
 $(".server-menu").click(function(){
   $("#application-container").css("display", "none")
   $("#server-container").css("display", "block")
+  $(".app-menu-text-box").css("display", "none")
   $(".server-menu-text-box").css("display", "block")
 })
 
