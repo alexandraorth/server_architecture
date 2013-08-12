@@ -174,7 +174,8 @@ class App < Sinatra::Base
 
 			new_app.update_attributes(
 				name: json[$i]["name"],
-				server_ids: json[$i]["servers"]
+				server_ids: json[$i]["servers"],
+				app_id: json[$i]["id"]
 				)
 
 			logger.info(new_app)
@@ -218,6 +219,10 @@ class App < Sinatra::Base
 
 	get '/api/application' do
 		Application.all.to_json
+	end
+
+	get '/api/serverset' do
+		Serverset.all.to_json
 	end
 
 	get '/api/server/:id' do

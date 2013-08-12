@@ -1,9 +1,12 @@
+var frozen = new Boolean();
+
 var TimemodelApp = {
   Models: {},
   Collections: {},
   Views: {},
   Templates: {}
 };
+
 
 TimemodelApp.Models.Timemodel = Backbone.Model.extend({
   defaults: {
@@ -31,6 +34,15 @@ TimemodelApp.Models.Node = Backbone.Model.extend({
   }
 });
 
+TimemodelApp.Models.Serverset = Backbone.Model.extend({
+  defaults:{
+
+  },
+  initialize: function(){
+
+  }
+});
+
 var TimemodelCollection = Backbone.Collection.extend({
   model: TimemodelApp.Models.Timemodel,
   url: "/api/timemodel"
@@ -44,7 +56,7 @@ var NodesCollection = Backbone.Collection.extend({
   url: function(){
     return '/api/timemodel/' + this.id + '/nodes'
   }
-})
+});
 
 var ApplicationCollection = Backbone.Collection.extend({
   initialize: function(models, options){
@@ -53,7 +65,7 @@ var ApplicationCollection = Backbone.Collection.extend({
   url: function(){
     return '/api/application'
   }
-})
+});
 
 var ConnectedNodesCollection = Backbone.Collection.extend({
   initialize: function(models, options){
@@ -64,14 +76,26 @@ var ConnectedNodesCollection = Backbone.Collection.extend({
   url: function(){
     return '/api/timemodel/' + this.id + '/node/' + this.node_name
   }
-})
+});
+
+var ServersetCollection = Backbone.Collection.extend({
+  initialize: function(models, options){
+  },
+  model: TimemodelApp.Models.Serverset,
+  url: function(){
+    return '/api/serverset'
+  }
+});
+
 
 var TimemodelView1 = Backbone.View.extend({
   el: $('html'),
   events: {
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
     'click #application-container .list-group .appButton': 'appButtonClick',
+    'click .setButton' : 'setButtonClick',
     'click .clear': 'clear',
+    'click .freeze': 'freeze',
     'click .removeSingleNodes' : 'removeSingles'
   },
   initialize: function(){
@@ -105,6 +129,16 @@ var TimemodelView1 = Backbone.View.extend({
       });
     })
 
+  },
+  freeze: function(){
+    if(frozen == true){
+      frozen = false;
+      force.start();
+    }
+    else if(frozen == false){
+      frozen = true;
+      force.stop();
+    }
   },
   removeSingles: function(){
 
@@ -164,12 +198,11 @@ var TimemodelView1 = Backbone.View.extend({
     
   },
   clear: function(){
-  
+    removeSelected(); 
+
     for(var i = nodes.length - 1; i >= 0; i--){
       remove(nodes[i].name)
     }
-
-    removeSelected();
     restart();
   },
   updateSlider: function(event, ui){
@@ -226,44 +259,70 @@ var TimemodelView1 = Backbone.View.extend({
   appButtonClick: function(e){
 
     current = $(e.currentTarget)
-
     current.toggleClass('selected');
 
-
     applicationName = current.data("name")
+
+    //if the node has been selected
+    if(current.hasClass('selected') == true){
+      addApp(applicationName, test(applicationName))
+    }
+    // if the node is not selected
+    else{
+      removeApp(applicationName, test(applicationName))
+      restart();
+    };
+  },
+  setButtonClick: function(e){
+    this.clear;
+
+    current = $(e.currentTarget);
+    setName = current.data("name");
+
+    var array = new Array();
+
+    serversetCollection.forEach(function(set){
+      if(set.get("name") == setName){
+        array = set.get("server_ids");
+      }
+    });
+
+    console.log(array)
+
+    array.forEach(function(app){
+      console.log(app)
+      var applicationNameArray = applicationCollection.where({app_id: app});
+
+      applicationName = applicationNameArray[0].get("name")
+      console.log(applicationName)
+
+      var holder = test(applicationName)
+
+      addApp(applicationName, holder)
+
+    });
+  }
+});
+
+function test(appName){
 
     var serverArray;
     var array = new Array();
 
     applicationCollection.forEach(function(application){
       if(application.get("name") == applicationName){
-        // console.log(application.get("server_ids"))
         serverArray = application.get("server_ids")
       }
     })
 
     serverArray.forEach(function(d, index){
-
-    	console.log("this is the d");
-    	console.log(d);
-
-    	var current = nodesCollection.where({server_id: d})
+      var current = nodesCollection.where({server_id: d})
       if(current.length > 0)
         array[index] = current[0].get("hostname");
     })
 
-    //if the node has been selected
-    if(current.hasClass('selected') == true){
-      addApp(applicationName, array)
-    }
-    // if the node is not selected
-    else{
-      removeApp(applicationName, array)
-      restart();
-    };
-  }
-});
-
+    return array
+}
 
 function click(e, f){
   var collectionID = e;
@@ -293,7 +352,6 @@ function removeSelected(){
   $(".nodeButton").each(function(){
     if($(this).attr("class")){
       $(this).removeClass("selected")
-
     }
   })
 
@@ -340,16 +398,29 @@ function populateApplications(){
     });
 }
 
+function populateServersets(){
+    serversetCollection = new ServersetCollection();
+    getSets = serversetCollection.fetch();
+
+    getSets.done(function(){
+      serversetCollection.forEach(function(set){
+        $('.dropdown-menu').append("<li><a href='#' class='setButton' data-name='" + set.get('name') + "'>" + set.get('name') + "</a></li>");
+      });
+    });
+}
+
 
 var main_collection = new TimemodelCollection();
 var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
 var applicationCollection;
 var nodesCollection;
+var serversetCollection;
 
 
 var timemodelView1 = new TimemodelView1();
 
 populateApplications();
+populateServersets();
 
 
 $(".application-menu").click(function(){

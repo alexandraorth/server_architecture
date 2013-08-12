@@ -274,16 +274,29 @@ function mousemove() {
 
 //handle highlighting of nodes, links, and neighbors
 function mouseover(){
-  d3.select(this).select("circle").attr("stroke", "#000000").attr("stroke-width", "2")
+  //fade out everything else
+  $('.node').each(function(node){
+    d3.select(this).select("text").attr("opacity", ".5")
+  })
+  $('.link').each(function(line){
+    $(this).css("opacity", ".5");
+  });
+
+
+  //make current node and links more prominent
+  d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
+  d3.select(this).select("text").attr("opacity", ".5")
+
 
   holder = this;
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
-      $(this).css("stroke-width", "3").css("stroke", "#000000")
-
+      $(this).css("opacity", "1");
+      $(this).css("stroke-width", "3").css("stroke", "#9ecae1")
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
-      $(this).css("stroke-width", "3").css("stroke", "#000000")
+      $(this).css("opacity", "1");
+      $(this).css("stroke-width", "3").css("stroke", "#9ecae1")
     }
   });
 }
@@ -292,14 +305,12 @@ function mouseover(){
 function mouseout(){
   d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1")
 
-  holder = this;
+  $('.node').each(function(node){
+    d3.select(this).select("text").attr("opacity", "1")
+  })
   $('.link').each(function(line){
-    if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1")){
-          $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
-    }
-    else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
-      $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
-    }
+    $(this).css("opacity", "1");
+    $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
   });
 }
 
