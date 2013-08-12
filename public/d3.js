@@ -65,7 +65,8 @@ function dragmove(d, i) {
 function dragend(d, i) {
   d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
   tick();
-  force.resume();
+  if(frozen == false)
+    force.resume();
 }
 
 //adds the node and the connection if it does not exist
@@ -74,7 +75,7 @@ function add(nodeName, connection){
   var bool = new Boolean(); // boolean 
   bool = false
 
-  //test to see if the node exists
+  //test to see if the node exists as a server or within an application
   nodes.forEach(function(target) {
     if(target.name == nodeName){
       bool = true
@@ -118,12 +119,19 @@ function addLinks(toName, fromName){
 }
 
 function addApp(appName, serverArray){
+  //push the application node to the view
+  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}
+  nodes.push(appNode);
+  restart();
+
   var toAdd = serverArray.slice(0);
 
-  //mark the nodes that need to be added to complete the application
+  //mark the nodes that need to be added to "complete" the application
   for(var i = toAdd.length -1; i >= 0; i--){
+    //go through all the servers that exist
   	server = toAdd[i];
   	nodes.forEach(function(target){
+      //if that server exists, remove it from "toAdd" as it does not need to be added to the view
       if(server == target.name){
       	toAdd.splice(i,1)          	
       }
@@ -141,22 +149,20 @@ function addApp(appName, serverArray){
     });
   };
 
-  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}, //push it to nodes
-  an = nodes.push(appNode);
-
-  restart();
-
+  //add all of the nodes in this application that are not in the view
   toAdd.forEach(function(d){
-   var time_id = $('.time').data("time_id").first
-
+    var time_id = $('.time').data("time_id").first
   	findAddEdges(time_id, d)
   });
 
+  //Timeout so that links are not added before all nodes exist
   setTimeout(function(){
+
+    //Remove all of the server nodes in the application to make room for the application node
     nodes.forEach(function(target){
       serverArray.forEach(function(server, index){
         if(server == target.name){
-          removeOnlyNode(target.name);
+          removeNode(target.name);
         }
       });
     });
@@ -165,22 +171,25 @@ function addApp(appName, serverArray){
       line = links[i]
 
       serverArray.forEach(function(server){
-        if(line.source.name == server){
-          links.push({source: appNode, target: line.target});
+        if(line != null && line.source.name == server){
+          addLinks(appNode.name, line.target.name)
+          // links.push({source: appNode, target: line.target});
           removeLink(line.source.name, line.target.name);           
         }
-        else if(line.target.name == server){
-          links.push({source: appNode, target: line.source});
+        else if(line != null && line.target.name == server){
+          addLinks(appNode.name, line.source.name)
+          // links.push({source: appNode, target: line.source});
           removeLink(line.source.name, line.target.name);
         }
       });
     };
     restart();
 
-  }, 1000);
+  }, 2000);
 }
 
 function removeLink(toNode, fromNode){
+  //Iterate in reverse
   for(var i = links.length -1; i >= 0; i--){
     line = links[i]
     if(toNode == line.source.name && fromNode == line.target.name){
@@ -196,7 +205,7 @@ function removeLink(toNode, fromNode){
 // does not remove connecting nodes.
 function remove(nodeName){
   //find the node that you want to remove
-  removeOnlyNode(nodeName);
+  removeNode(nodeName);
 
   //Iterate in reverse. This way the indeces do not change
   //as you iterate through and you can see/remove all the links.
@@ -217,7 +226,7 @@ function remove(nodeName){
   // restart();
 }
 
-function removeOnlyNode(nodeName){
+function removeNode(nodeName){
 
   nodes.forEach(function(target, index){
     if(target.name == nodeName){
@@ -242,10 +251,6 @@ function removeApp(appName, serverArray){
 }
 
 
-function mousemove() {
-  cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
-}
-
 function tick() {
   link.attr("x1", function(d) { return d.source.x; })
   .attr("y1", function(d) { return d.source.y; })
@@ -262,6 +267,10 @@ function tick() {
   });
 }
 
+//handle movement of nodes
+function mousemove() {
+  cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
+}
 
 //handle highlighting of nodes, links, and neighbors
 function mouseover(){
@@ -271,7 +280,6 @@ function mouseover(){
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
       $(this).css("stroke-width", "3")
-      cons;ole.log(line.source)
 
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
@@ -300,7 +308,9 @@ function restart() {
 
   link.exit().remove();
 
-  link.enter().insert("line", ".node").attr("class", "link");
+  link.enter().insert("line", ".node").attr("class", "link").on("mouseover", function(d){
+    console.log(d.source.name + " ==>>> " + d.target.name);
+  });
 
   rect = rect.data(nodes, function(d){return d.name})
 
