@@ -115,7 +115,7 @@ var TimemodelView1 = Backbone.View.extend({
       //go through each node
       $('.node').each(function(target){
         //to find if it is a server
-        if($(this).children()[0].r.animVal.value <= 5){
+        if($(this).children()[0].r.animVal.value <= 8){
           $(this).css("display", "none");
 
           //save reference to the node, os you can test for location
@@ -141,7 +141,7 @@ var TimemodelView1 = Backbone.View.extend({
       $('.removeSingleNodes').attr('check', 'false');
 
       $('.node').each(function(target){
-        if($(this).children()[0].r.animVal.value <= 5){
+        if($(this).children()[0].r.animVal.value <= 8){
           $(this).css("display", "block");
 
           var holder = this

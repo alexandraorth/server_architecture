@@ -1,8 +1,21 @@
+
+//HANDLE WINDOW SIZE CHANGE/RESPONSIVENESS
+
+//dynamic heights and widths based on window size
 width = $("#container").width()
 height = $("#container").width()
 
 d3.select(window)
   .on("resize", sizeChange);
+
+function sizeChange() {
+  width = $("#container").width()
+  height = $("#container").width()
+  d3.layout.force().size([width, height])
+}
+
+
+//BEGIN D3 SETUP
 
 var fill = d3.scale.category20();
 
@@ -35,14 +48,6 @@ var node_drag = d3.behavior.drag()
     .on("drag", dragmove)
     .on("dragend", dragend);        
 
-function sizeChange() {
-  d3.select(".svg-container").attr("transform", "scale(" + $("#container").width()/900 + ")");
-  width = $("#container").width()
-  height = $("#container").width()
-  d3.layout.force().size([width/2, height/2])
-  // $("svg").height($("#container").width()*0.618);
-}
-
 //following three functions dragstart, dragmove and dragend
 // will allow nodes to be "held" in place when you click them
 function dragstart(d, i) {
@@ -66,7 +71,6 @@ function dragend(d, i) {
 //adds the node and the connection if it does not exist
 //if the node exists and the taget exists, adds only the connection
 function add(nodeName, connection){
-	// console.log("add is getting called for this node" + nodeName)
   var bool = new Boolean(); // boolean 
   bool = false
 
@@ -79,7 +83,7 @@ function add(nodeName, connection){
 
   //if the node does not exist
   if(bool == false){ 
-    var node = {x: 300, y: 200, name: nodeName, type: "node"}, //push it to nodes
+    var node = {x: 500, y: 200, name: nodeName, type: "node"}, //push it to nodes
     n = nodes.push(node);
 
     addLinks(nodeName, connection); //add any links
@@ -137,15 +141,10 @@ function addApp(appName, serverArray){
     });
   };
 
-    var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}, //push it to nodes
+  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}, //push it to nodes
   an = nodes.push(appNode);
 
-  console.log(appNode)
-
   restart();
-
-  console.log("nodes to add:")
-  console.log(toAdd)
 
   toAdd.forEach(function(d){
    var time_id = $('.time').data("time_id").first
@@ -176,19 +175,12 @@ function addApp(appName, serverArray){
         }
       });
     };
-
-
-    // console.log(links)
-
     restart();
 
   }, 1000);
 }
 
 function removeLink(toNode, fromNode){
-
-  // console.log("AH GOT CALLED AND REMOVED THIS LINK" + toNode + " ::::::: " + fromNode);
-
   for(var i = links.length -1; i >= 0; i--){
     line = links[i]
     if(toNode == line.source.name && fromNode == line.target.name){
@@ -226,7 +218,6 @@ function remove(nodeName){
 }
 
 function removeOnlyNode(nodeName){
-  console.log("went into remove only node")
 
   nodes.forEach(function(target, index){
     if(target.name == nodeName){
@@ -266,7 +257,40 @@ function tick() {
       return "translate(" + Math.max(13, Math.min(width - 13, d.x)) + "," + Math.max(13, Math.min(height - 13, d.y)) + ")"
     }
     else if(d.type == "node"){
-      return "translate(" + Math.max(5, Math.min(width - 5, d.x)) + "," + Math.max(5, Math.min(height - 5, d.y)) + ")"
+      return "translate(" + Math.max(8, Math.min(width - 8, d.x)) + "," + Math.max(8, Math.min(height - 8, d.y)) + ")"
+    }
+  });
+}
+
+
+//handle highlighting of nodes, links, and neighbors
+function mouseover(){
+  d3.select(this).select("circle").attr("stroke", "#9ecae1").attr("stroke-width", "2")
+
+  holder = this;
+  $('.link').each(function(line){
+    if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
+      $(this).css("stroke-width", "3")
+      cons;ole.log(line.source)
+
+    }
+    else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
+      $(this).css("stroke-width", "3")
+    }
+  });
+}
+
+// handle de-highlighting of nodes, links and neighbors
+function mouseout(){
+  d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1")
+
+  holder = this;
+  $('.link').each(function(line){
+    if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1")){
+          $(this).css("stroke-width", "1");
+    }
+    else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
+      $(this).css("stroke-width", "1")
     }
   });
 }
@@ -288,12 +312,11 @@ function restart() {
 
     g.attr("class", "node")
     .call(node_drag)
-    // .on("mouseover", function(d){
-    //   console.log(d.name);
-    // });
+    .on("mouseover", mouseover)
+    .on("mouseout", mouseout);
 
     g.append("svg:circle", ".cursor")
-    .attr("r", 5)
+    .attr("r", 8)
     .attr("fill", "#7DBF3B");
 
     g.append("svg:text")
@@ -309,9 +332,8 @@ function restart() {
 
     g.attr("class", "node")
     .call(node_drag)
-    .on("mouseover", function(d){
-      console.log(d.nodesContained);
-    });
+    .on("mouseover", mouseover)
+    .on("mouseout", mouseout);
 
     g.append("svg:circle", ".cursor")
     .attr("r", 13)
@@ -321,7 +343,6 @@ function restart() {
     .attr("x", 10)
     .attr("dy", ".31em")
     .text(function(target){
-      console.log("just went into text" + target.name)
       return target.name;
     })
 
