@@ -35,8 +35,8 @@ var svg = d3.select("#container")
 
 var nodes = force.nodes(),
     links = force.links(),
-    rect = svg.append('svg:g').selectAll("g"),
-    link = svg.append('svg:g').selectAll(".link");
+    link = svg.append('svg:g').selectAll(".link"),
+    rect = svg.append('svg:g').selectAll("g");
 
 var cursor = svg.append("circle")
     .attr("r", 30)
@@ -274,16 +274,16 @@ function mousemove() {
 
 //handle highlighting of nodes, links, and neighbors
 function mouseover(){
-  d3.select(this).select("circle").attr("stroke", "#9ecae1").attr("stroke-width", "2")
+  d3.select(this).select("circle").attr("stroke", "#000000").attr("stroke-width", "2")
 
   holder = this;
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
-      $(this).css("stroke-width", "3")
+      $(this).css("stroke-width", "3").css("stroke", "#000000")
 
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
-      $(this).css("stroke-width", "3")
+      $(this).css("stroke-width", "3").css("stroke", "#000000")
     }
   });
 }
@@ -295,10 +295,10 @@ function mouseout(){
   holder = this;
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1")){
-          $(this).css("stroke-width", "1");
+          $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
-      $(this).css("stroke-width", "1")
+      $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
     }
   });
 }
@@ -316,6 +316,7 @@ function restart() {
 
   rect.exit().remove();
 
+  //if adding a node, format it as a node
   if(nodes[nodes.length -1].type == "node"){ 
 
     var g = rect.enter().append('svg:g');
@@ -336,6 +337,8 @@ function restart() {
       return target.name;
     })
   }
+
+  //if adding an application, format it as an application
   else if(nodes[nodes.length -1].type == "app"){
 
     var g = rect.enter().append('svg:g');
