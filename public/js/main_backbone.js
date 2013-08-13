@@ -1,50 +1,51 @@
+// ==========================
+// VARIABLES
+// ==========================
+
+
 var frozen = new Boolean();
 
-var TimemodelApp = {
+var main_collection = null;
+var applicationCollection = null;
+var nodesCollection = null;
+var serversetCollection = null;
+
+var view;
+
+var ArchitectureApp = {
   Models: {},
   Collections: {},
   Views: {},
   Templates: {}
 };
 
+// ==========================
+// MODELS
+// ==========================
 
-TimemodelApp.Models.Timemodel = Backbone.Model.extend({
-  defaults: {
-  
-  },
-  initialize: function(){
 
-  }
+ArchitectureApp.Models.Time = Backbone.Model.extend({
 });
 
-TimemodelApp.Models.Application = Backbone.Model.extend({
-  defaults: {
-  
-  },
-  initialize: function(){
-
-  }
+ArchitectureApp.Models.Application = Backbone.Model.extend({
 });
 
-TimemodelApp.Models.Node = Backbone.Model.extend({
-  defaults: {
-  },
-  initialize: function(){
-
-  }
+ArchitectureApp.Models.Node = Backbone.Model.extend({
 });
 
-TimemodelApp.Models.Serverset = Backbone.Model.extend({
-  defaults:{
-
-  },
-  initialize: function(){
-
-  }
+ArchitectureApp.Models.Serverset = Backbone.Model.extend({
 });
 
-var TimemodelCollection = Backbone.Collection.extend({
-  model: TimemodelApp.Models.Timemodel,
+
+
+// ==========================
+// COLLECTIONS
+// ==========================
+
+
+
+var TimeCollection = Backbone.Collection.extend({
+  model: ArchitectureApp.Models.Time,
   url: "/api/timemodel"
 });
 
@@ -52,7 +53,7 @@ var NodesCollection = Backbone.Collection.extend({
   initialize: function(models, options){
     this.id = options.id
   },
-  model: TimemodelApp.Models.Node,
+  model: ArchitectureApp.Models.Node,
   url: function(){
     return '/api/timemodel/' + this.id + '/nodes'
   }
@@ -61,18 +62,18 @@ var NodesCollection = Backbone.Collection.extend({
 var ApplicationCollection = Backbone.Collection.extend({
   initialize: function(models, options){
   },
-  model: TimemodelApp.Models.Application,
+  model: ArchitectureApp.Models.Application,
   url: function(){
     return '/api/application'
   }
 });
 
-var ConnectedNodesCollection = Backbone.Collection.extend({
+var EdgeCollection = Backbone.Collection.extend({
   initialize: function(models, options){
     this.id = options.id
     this.node_name = options.node_name
   },
-  model: TimemodelApp.Models.Node,
+  model: ArchitectureApp.Models.Node,
   url: function(){
     return '/api/timemodel/' + this.id + '/node/' + this.node_name
   }
@@ -81,14 +82,19 @@ var ConnectedNodesCollection = Backbone.Collection.extend({
 var ServersetCollection = Backbone.Collection.extend({
   initialize: function(models, options){
   },
-  model: TimemodelApp.Models.Serverset,
+  model: ArchitectureApp.Models.Serverset,
   url: function(){
     return '/api/serverset'
   }
 });
 
 
-var TimemodelView1 = Backbone.View.extend({
+// ==========================
+// VIEW
+// ==========================
+
+
+var View = Backbone.View.extend({
   el: $('html'),
   events: {
     'click #server-container .list-group .nodeButton': 'nodeButtonClick',
@@ -130,7 +136,7 @@ var TimemodelView1 = Backbone.View.extend({
     })
 
   },
-  freeze: function(){
+  freeze: function(){ //Will stop the "force on the graph"
     if(frozen == true){
       frozen = false;
       force.start();
@@ -140,58 +146,18 @@ var TimemodelView1 = Backbone.View.extend({
       force.stop();
     }
   },
-  removeSingles: function(){
+  removeSingles: function(){ //Remove any "server" nodes, references "show"
 
     //if you want to hide servers
     if($('.removeSingleNodes').attr('check') == 'false'){
       $('.removeSingleNodes').attr('check', 'true');
-
-      //go through each node
-      $('.node').each(function(target){
-        //to find if it is a server
-        if($(this).children()[0].r.animVal.value <= 8){
-          $(this).css("display", "none");
-
-          //save reference to the node, os you can test for location
-          var holder = this
-
-          //hide any links that have a starting point in the same location as the node
-          $('.link').each(function(line){
-            if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
-              $(this).attr("x1")
-              ||
-              $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
-              $(this).attr("x2")){
-              $(this).css("display", "none")
-            }
-          });
-        }
-      });
+      show("none")
     }
 
     //if you want to show servers
     else{
-
       $('.removeSingleNodes').attr('check', 'false');
-
-      $('.node').each(function(target){
-        if($(this).children()[0].r.animVal.value <= 8){
-          $(this).css("display", "block");
-
-          var holder = this
-
-          //show links
-          $('.link').each(function(line){
-            if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
-              $(this).attr("x1")
-              ||
-              $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
-              $(this).attr("x2")){
-              $(this).css("display", "block")
-            }
-          }); 
-        }
-      });
+      show("block")
     }
 
     restart();
@@ -260,9 +226,6 @@ var TimemodelView1 = Backbone.View.extend({
     };
   },
   appButtonClick: function(e){
-
-    $(".removeSingleNodes").css("display", 'inline')
-
     current = $(e.currentTarget)
     current.toggleClass('selected');
 
@@ -270,11 +233,11 @@ var TimemodelView1 = Backbone.View.extend({
 
     //if the node has been selected
     if(current.hasClass('selected') == true){
-      addApp(applicationName, test(applicationName))
+      addApp(applicationName, getArray(applicationName))
     }
     // if the node is not selected
     else{
-      removeApp(applicationName, test(applicationName))
+      removeApp(applicationName, getArray(applicationName))
       restart();
     };
   },
@@ -301,7 +264,7 @@ var TimemodelView1 = Backbone.View.extend({
       applicationName = applicationNameArray[0].get("name")
       console.log(applicationName)
 
-      var holder = test(applicationName)
+      var holder = getArray(applicationName)
 
       addApp(applicationName, holder)
 
@@ -309,7 +272,7 @@ var TimemodelView1 = Backbone.View.extend({
   }
 });
 
-function test(appName){
+function getArray(appName){
 
     var serverArray;
     var array = new Array();
@@ -367,18 +330,43 @@ function removeSelected(){
   })
 }
 
+function show(display){
+
+  //go through each node
+  $('.node').each(function(target){
+    //to find if it is a server
+    if($(this).children()[0].r.animVal.value <= 8){
+      $(this).css("display", display);
+
+        //save reference to the node, os you can test for location
+        var holder = this
+
+          //hide any links that have a starting point in the same location as the node
+          $('.link').each(function(line){
+            if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x1")
+              ||
+              $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
+              $(this).attr("x2")){
+              $(this).css("display", display)
+          }
+        });
+    }
+  });  
+}
+
 function findAddEdges(time_id, name){
   //Add node
   add(name);
 
-  //fetch it's connections
-  var connectedNodesCollection = new ConnectedNodesCollection([],{id: time_id, node_name: name })
-  getConnected = connectedNodesCollection.fetch()
-  getConnected.done(function(){
+  //fetch its connections
+  var edgeCollection = new EdgeCollection([],{id: time_id, node_name: name })
+  getEdge = edgeCollection.fetch()
+  getEdge.done(function(){
 
-  	connectedNodesCollection.forEach(function(edge){
+  	edgeCollection.forEach(function(edge){
 
-          //add it's connections
+          //add its connections
           if(edge.get('toID') === name)
           	add(edge.get('fromID'), edge.get('toID'))
           else if(edge.get('fromID') === name)
@@ -388,6 +376,7 @@ function findAddEdges(time_id, name){
   });
 }
 
+//Fetch applications and add them to the view
 function populateApplications(){
     applicationCollection = new ApplicationCollection();
     getApps = applicationCollection.fetch();
@@ -403,6 +392,7 @@ function populateApplications(){
     });
 }
 
+//Fetch serversets and add them to the view
 function populateServersets(){
     serversetCollection = new ServersetCollection();
     getSets = serversetCollection.fetch();
@@ -414,16 +404,25 @@ function populateServersets(){
     });
 }
 
-var main_collection = new TimemodelCollection();
-var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
-var applicationCollection;
-var nodesCollection;
-var serversetCollection;
+// ==========================
+// INSTANTIATION
+// ==========================
 
-var timemodelView1 = new TimemodelView1();
+
+main_collection = new TimeCollection();
+var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
+
+view = new View()
 
 populateApplications();
 populateServersets();
+
+
+
+// ==========================
+// CSS/STYLES
+// ==========================
+
 
 $(".application-menu").click(function(){
   $(".server-menu").parent().css("background-color", 'white')

@@ -1,6 +1,6 @@
 require 'mongoid'
 
-class Timemodel
+class Time
 	include Mongoid::Document
 
 	field :time, type: Integer

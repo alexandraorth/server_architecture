@@ -4,7 +4,7 @@ require 'mongoid'
 require 'httparty'
 require 'erb'
 require_relative 'models/server'
-require_relative 'models/timemodel'
+require_relative 'models/time'
 require_relative 'models/edge'
 require_relative 'models/node'
 require_relative 'models/application'
@@ -21,8 +21,8 @@ class App < Sinatra::Base
 		erb :index
 	end
 
-	get '/timemodel' do
-		File.read(File.join('views', 'timemodel.html.erb'))
+	get '/time' do
+		File.read(File.join('views', 'time.html.erb'))
 	end
 
 	before '/api*' do
@@ -52,10 +52,10 @@ class App < Sinatra::Base
 
 		serverJSON = JSON.parse(response.to_s().gsub('=>', ':'))		
 
-		new_time = Timemodel.create 
+		new_time = Time.create 
 		new_time.update_attributes(time: Time.new.to_i)
 
-		# Add nodes to timemodels from API
+		# Add nodes to times from API
 		while json["Node"][$i] != nil do
 			new_node = new_time.nodes.create
 			name = json["Node"][$i]["id"]
@@ -81,7 +81,7 @@ class App < Sinatra::Base
 			$i = $i + 1
 		end
 
-		# Add edges to timemodels from API
+		# Add edges to times from API
 		while json["Edge"][$i] != nil do
 			new_edge = new_time.edges.create
 			new_edge.update_attributes(
@@ -96,31 +96,31 @@ class App < Sinatra::Base
 		end
 	end
 
-	get '/api/timemodel' do
-		Timemodel.all.to_json
+	get '/api/time' do
+		Time.all.to_json
 	end
 
-	get '/api/timemodel/:id' do
-		Timemodel.find(params[:id]).to_json
+	get '/api/time/:id' do
+		Time.find(params[:id]).to_json
 	end
 
-	get '/api/timemodel/:id/nodes' do
-		 Timemodel.find(params[:id]).nodes.to_json
+	get '/api/time/:id/nodes' do
+		 Time.find(params[:id]).nodes.to_json
 	end
 
-	get '/api/timemodel/:id/node/:node_name' do
+	get '/api/time/:id/node/:node_name' do
 
 		data = Array.new
 
 		data.push("[")
-		# node = Timemodel.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json 
+		# node = Time.find(params[:id]).nodes.find_by(hostname: params[:node_name]).to_json 
 		# data.push(",")
 
-		logger.info("this is the timemodel id")
+		logger.info("this is the time id")
 		logger.info(params[:id])
 
 		# logger.info("right before the loop")
-		Edge.all_in(timemodel_id: [params[:id]]).each do |edge|
+		Edge.all_in(time_id: [params[:id]]).each do |edge|
 			# logger.info("went into this all_in thing")
 			# logger.info("from edge" + edge.fromID)
 			# logger.info("to edge" + edge.toID)
@@ -136,19 +136,19 @@ class App < Sinatra::Base
 		return data
 	end
 
-	post '/api/timemodel' do
-		data = JSON.parse params[:timemodel]
-		new_timemodel = Timemodel.create time: data['time']
-		response['Location'] = '/server/#{new_timemodel.id}'
+	post '/api/time' do
+		data = JSON.parse params[:time]
+		new_time = Time.create time: data['time']
+		response['Location'] = '/server/#{new_time.id}'
 	end
 
-	put '/api/timemodel' do
-		data = JSON.parse params[:timemodel]
-		Timemodel.find(data['_id']).update_attributes time: data['time']
+	put '/api/time' do
+		data = JSON.parse params[:time]
+		Time.find(data['_id']).update_attributes time: data['time']
 	end
 
 	delete '/api/server/:id' do
-		Timemodel.find(params[:id]).delete
+		Time.find(params[:id]).delete
 	end
 
 	get '/api/server' do

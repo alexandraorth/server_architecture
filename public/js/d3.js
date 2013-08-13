@@ -89,14 +89,15 @@ function add(nodeName, connection){
         bool = true;
       }
     }
-    else if(target.type == "app"){
-      target.nodesContained.forEach(function(serv){
-        console.log(serv.nodesContained)
-        if(serv.name == nodeName){
-          bool = true;
-        }
-      });
-    }
+    // else if(target.type == "app"){
+    //   console.log(target.name)
+    //   target.nodesContained.forEach(function(serv){
+    //     console.log(target.nodesContained)
+    //     if(serv.name == nodeName){
+    //       bool = true;
+    //     }
+    //   });
+    // }
   });
 
   //if the node does not exist
@@ -136,6 +137,8 @@ function addLinks(toName, fromName){
 }
 
 function addApp(appName, serverArray){
+  $(".removeSingleNodes").css("display", 'inline')
+
   //push the application node to the view
   var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}
   nodes.push(appNode);
@@ -179,12 +182,10 @@ function addApp(appName, serverArray){
       serverArray.forEach(function(server){
         if(line != null && line.source.name == server){
           addLinks(appNode.name, line.target.name)
-          // links.push({source: appNode, target: line.target});
           removeLink(line.source.name, line.target.name);           
         }
         else if(line != null && line.target.name == server){
           addLinks(appNode.name, line.source.name)
-          // links.push({source: appNode, target: line.source});
           removeLink(line.source.name, line.target.name);
         }
       });
@@ -250,12 +251,6 @@ function removeNode(nodeName){
       appPresent = true;
     }
   });
-
-  // nodes.forEach(function(target){
-  //   if(target.type == "app"){
-  //     appPresent = true;
-  //   }
-  // })
 
   if(appPresent == false){
     $(".removeSingleNodes").css("display", 'none')
@@ -346,9 +341,7 @@ function restart() {
 
   link.exit().remove();
 
-  link.enter().insert("line", ".node").attr("class", "link").on("mouseover", function(d){
-    console.log(d.source.name + " ==>>> " + d.target.name);
-  });
+  link.enter().insert("line", ".node").attr("class", "link");
 
   rect = rect.data(nodes, function(d){return d.name})
 
