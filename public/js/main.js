@@ -199,6 +199,9 @@ var TimemodelView1 = Backbone.View.extend({
   },
   clear: function(){
     removeSelected(); 
+    $(".removeSingleNodes").css("display", 'none')
+
+    console.log("clear was called")
 
     for(var i = nodes.length - 1; i >= 0; i--){
       remove(nodes[i].name)
@@ -257,6 +260,8 @@ var TimemodelView1 = Backbone.View.extend({
     };
   },
   appButtonClick: function(e){
+
+    $(".removeSingleNodes").css("display", 'inline')
 
     current = $(e.currentTarget)
     current.toggleClass('selected');
@@ -409,21 +414,20 @@ function populateServersets(){
     });
 }
 
-
 var main_collection = new TimemodelCollection();
 var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
 var applicationCollection;
 var nodesCollection;
 var serversetCollection;
 
-
 var timemodelView1 = new TimemodelView1();
 
 populateApplications();
 populateServersets();
 
-
 $(".application-menu").click(function(){
+  $(".server-menu").parent().css("background-color", 'white')
+  $(".application-menu").parent().css("background-color", "#D9EDF7")
   $("#server-container").css("display", "none")
   $("#application-container").css("display", "block")
   $(".app-menu-text-box").css("display", "block")
@@ -431,11 +435,16 @@ $(".application-menu").click(function(){
 })
 
 $(".server-menu").click(function(){
+  $(".server-menu").parent().css("background-color", '#D9EDF7')
+  $(".application-menu").parent().css("background-color", "white")
   $("#application-container").css("display", "none")
   $("#server-container").css("display", "block")
   $(".app-menu-text-box").css("display", "none")
   $(".server-menu-text-box").css("display", "block")
 })
+
+  $(".server-menu").parent().css("background-color", '#D9EDF7')
+  $(".removeSingleNodes").css("display", 'none')
 
 
 $(function(){

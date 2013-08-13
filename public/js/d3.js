@@ -1,5 +1,7 @@
-
+// ==========================
 //HANDLE WINDOW SIZE CHANGE/RESPONSIVENESS
+// ==========================
+
 
 //dynamic heights and widths based on window size
 width = $("#container").width()
@@ -14,8 +16,9 @@ function sizeChange() {
   d3.layout.force().size([width, height])
 }
 
-
-//BEGIN D3 SETUP
+// ==========================
+// BEGIN D3 SETUP
+// ==========================
 
 var fill = d3.scale.category20();
 
@@ -69,6 +72,10 @@ function dragend(d, i) {
     force.resume();
 }
 
+// ==========================
+//ADDING APPLICATIONS/NODES
+// ==========================
+
 //adds the node and the connection if it does not exist
 //if the node exists and the taget exists, adds only the connection
 function add(nodeName, connection){
@@ -77,8 +84,18 @@ function add(nodeName, connection){
 
   //test to see if the node exists as a server or within an application
   nodes.forEach(function(target) {
-    if(target.name == nodeName){
-      bool = true
+    if(target.type == "node"){
+      if(target.name == nodeName){
+        bool = true;
+      }
+    }
+    else if(target.type == "app"){
+      target.nodesContained.forEach(function(serv){
+        console.log(serv.nodesContained)
+        if(serv.name == nodeName){
+          bool = true;
+        }
+      });
     }
   });
 
@@ -135,17 +152,6 @@ function addApp(appName, serverArray){
       if(server == target.name){
       	toAdd.splice(i,1)          	
       }
-      // if(target.type == "app"){
-      //   console.log("these are the nodesContained:")
-      //   console.log(target.nodesContained)
-      //   target.nodesContained.forEach(function(contained){
-      //     console.log(contained)
-      //     if(server == contained){
-      //       console.log("REMOVING")
-      //       toAdd.splice(i,1)           
-      //     }
-      //   });
-      // }
     });
   };
 
@@ -185,7 +191,7 @@ function addApp(appName, serverArray){
     };
     restart();
 
-  }, 2000);
+  }, 1000);
 }
 
 function removeLink(toNode, fromNode){
@@ -200,6 +206,11 @@ function removeLink(toNode, fromNode){
     };
   };
 }
+
+
+// ==========================
+//REMOVING APPLICATIONS/NODES
+// ==========================
 
 //removes the node and any links that connect to that node, 
 // does not remove connecting nodes.
@@ -228,14 +239,27 @@ function remove(nodeName){
 
 function removeNode(nodeName){
 
+  var appPresent = new Boolean();
+  appPresent = false;
+
   nodes.forEach(function(target, index){
     if(target.name == nodeName){
     	nodes.splice(index, 1);
-      // swap();
-
-      $(this).addClass("toRemove")
-    };
+    }
+    else if(target.type == "app"){
+      appPresent = true;
+    }
   });
+
+  // nodes.forEach(function(target){
+  //   if(target.type == "app"){
+  //     appPresent = true;
+  //   }
+  // })
+
+  if(appPresent == false){
+    $(".removeSingleNodes").css("display", 'none')
+  }
 
   restart();
 }
@@ -243,13 +267,16 @@ function removeNode(nodeName){
 function removeApp(appName, serverArray){
   remove(appName)
 
-  serverArray.forEach(function(d){
+  $.each(serverArray, function(d){
    var time_id = $('.time').data("time_id").first
 
     findAddEdges(time_id, d)
   });
 }
 
+// ==========================
+//NODE MOVEMENT/VIEW
+// ==========================
 
 function tick() {
   link.attr("x1", function(d) { return d.source.x; })
@@ -285,7 +312,7 @@ function mouseover(){
 
   //make current node and links more prominent
   d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
-  d3.select(this).select("text").attr("opacity", ".5")
+  d3.select(this).select("text").attr("opacity", "1")
 
 
   holder = this;
