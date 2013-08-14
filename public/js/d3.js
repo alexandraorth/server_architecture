@@ -259,8 +259,7 @@ function removeNode(nodeName){
 
 function removeApp(appName, serverArray){
   remove(appName);
-
-  $.each(serverArray, function(d){
+  $.each(serverArray, function(index, d){
    var time_id = $('.time').data("time_id").first;
 
     findAddEdges(time_id, d);
