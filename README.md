@@ -1,5 +1,4 @@
-## "Pod Architecture" 
-#### (communications within a pod)
+## Pod Architecture
 
 ![x](https://raw.github.com/alexandraorth/server_architecture/master/public/screenshot2.png)
 
