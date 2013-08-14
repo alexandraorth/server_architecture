@@ -4,9 +4,9 @@
 
 This "Pod Architecture" app was built to show the communications between servers and applications within an AppFirst pod.
 
-This app was built using a Sinatra backend coupled with a MongoDB database. It uses backbone.js for the frontend/UI. The Sinatra part acts as a custom "api" for the app. It makes calls to the AppFirst API (using the credentials specified in app.rb) and stores the modified results in the database. The app would be extremely slow if it needed to contact the AppFirst API every time a node was modified, and using a database to store the data is a good way to speed up load times. Also, because I wanted to see if it could be done.
+This app was built using a Sinatra backend coupled with a MongoDB database. It uses backbone.js for the frontend/UI. The Sinatra part acts as a custom "api" for the app. It makes calls to the AppFirst API (using the credentials specified in app.rb) and stores the modified results in the database. The app would be extremely slow if it needed to contact the AppFirst API every time a node was modified, and using a database to store the data is a good way to speed up load times.
 
-The backbone.js frontend loads the topology data for whatever time you specify using the slider. Please note that data is only available if you have made a call to the topology API. As such, the first step when using this app would be to populate your database using api calls. As well, if this app were to be used by a client, I would recommend atomating this porcess so that the topology data called and stored in the database every minute. 
+The backbone.js frontend loads the topology data for whatever time you specify using the slider. Please note that data is only available if you have made a call to the topology API. As such, the first step when using this app would be to populate your database using api calls. If this app were to be used by a client, I would recommend automating this process so that the topology data is called and stored in the database every minute. This would give the user of the application access to a larger amount, and more varied, data.
 
 ## To start application:
 
