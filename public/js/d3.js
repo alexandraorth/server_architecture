@@ -89,15 +89,6 @@ function add(nodeName, connection){
         bool = true;
       }
     }
-    // else if(target.type == "app"){
-    //   console.log(target.name)
-    //   target.nodesContained.forEach(function(serv){
-    //     console.log(target.nodesContained)
-    //     if(serv.name == nodeName){
-    //       bool = true;
-    //     }
-    //   });
-    // }
   });
 
   //if the node does not exist
@@ -166,28 +157,42 @@ function addApp(appName, serverArray){
   setTimeout(function(){
 
     //Remove all of the server nodes in the application to make room for the application node
-    nodes.forEach(function(target){
-      serverArray.forEach(function(server, index){
+    serverArray.forEach(function(server, index){
+      nodes.forEach(function(target){
         if(server == target.name){
           removeNode(target.name);
-        }
+        };
+
+
+        if (target.type == "app") {
+          // console.log("this is the app array turned into a string")
+          // console.log(target.nodesContained.join());
+          var arrayAsString = target.nodesContained.join();
+
+          // console.log(server);
+          // console.log(target.name);
+          // console.log(arrayAsString);
+
+          if(server.indexOf(arrayAsString) > 0){
+            console.log(server.name + " is in " + target.name);
+          }
+        };
       });
-    });
 
-    for(var i = links.length -1; i >= 0; i--){
-      line = links[i];
 
-      serverArray.forEach(function(server){
+      for(var i = links.length -1; i >= 0; i--){
+        line = links[i];
+
         if(line != null && line.source.name == server){
           addLinks(appNode.name, line.target.name);
-          removeLink(line.source.name, line.target.name);           
+          links.splice(i,1)
         }
         else if(line != null && line.target.name == server){
           addLinks(appNode.name, line.source.name);
-          removeLink(line.source.name, line.target.name);
-        }
-      });
-    };
+          links.splice(i,1)
+        };
+      };
+    });
     restart();
 
   }, 1000);

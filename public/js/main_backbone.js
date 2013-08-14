@@ -160,8 +160,9 @@ var View = Backbone.View.extend({
     removeSelected(); 
     $(".removeSingleNodes").css("display", 'none');
     for(var i = nodes.length - 1; i >= 0; i--){
-      remove(nodes[i].name)
+      remove(nodes[i].name);
     }
+    console.lo
     restart();
   },
   updateSlider: function(event, ui){
@@ -221,8 +222,7 @@ var View = Backbone.View.extend({
     };
   },
   setButtonClick: function(e){
-    this.clear;
-
+    // view.clear();
     current = $(e.currentTarget);
     setName = current.data("name");
 
