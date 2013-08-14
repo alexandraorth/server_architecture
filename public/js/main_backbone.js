@@ -46,7 +46,7 @@ ArchitectureApp.Models.Serverset = Backbone.Model.extend({
 
 var TimeCollection = Backbone.Collection.extend({
   model: ArchitectureApp.Models.Time,
-  url: "/api/timemodel"
+  url: "/api/snapshot"
 });
 
 var NodesCollection = Backbone.Collection.extend({
@@ -55,7 +55,7 @@ var NodesCollection = Backbone.Collection.extend({
   },
   model: ArchitectureApp.Models.Node,
   url: function(){
-    return '/api/timemodel/' + this.id + '/nodes'
+    return '/api/snapshot/' + this.id + '/nodes'
   }
 });
 
@@ -75,7 +75,7 @@ var EdgeCollection = Backbone.Collection.extend({
   },
   model: ArchitectureApp.Models.Node,
   url: function(){
-    return '/api/timemodel/' + this.id + '/node/' + this.node_name
+    return '/api/snapshot/' + this.id + '/node/' + this.node_name
   }
 });
 
@@ -109,19 +109,6 @@ var View = Backbone.View.extend({
     this.render();
   },
   render: function(){
-    fetch.done(function(){
-
-      main_collection.forEach(function(model){
-        $(this.el).append("This is the time " + model.get('time'));
-        $('#time-container .list-group').append("<a href='#' class='list-group-item' class='test_button' data-id='" 
-          + model.get('_id') + "'>" + model.get('time') + "</a>")
-      })
-
-      $('#timemodel-container').html($(this.el).html());
-
-      click(main_collection.models[0].get('_id'), main_collection.models[0].get('time'))
-    })
-
     var self = this;
     var length = main_collection.length
 
@@ -271,6 +258,11 @@ var View = Backbone.View.extend({
     });
   }
 });
+
+
+// ==========================
+// HELPER FUNCTIONS
+// ==========================
 
 function getArray(appName){
 

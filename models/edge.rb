@@ -12,5 +12,5 @@ class Edge
 
 	attr_accessible :toID, :fromID, :swrite, :sread, :ttime1, :ttime2
 
-	belongs_to :timemodel
+	belongs_to :snapshot
 end

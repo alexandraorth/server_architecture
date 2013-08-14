@@ -1,6 +1,6 @@
 require 'mongoid'
 
-class Time
+class Snapshot
 	include Mongoid::Document
 
 	field :time, type: Integer

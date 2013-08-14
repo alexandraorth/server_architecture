@@ -6,5 +6,5 @@ class Node
 	field :id, type: String
 	field :hostname, type: String
 
-	belongs_to :timemodel
+	belongs_to :snapshot
 end

@@ -139,6 +139,8 @@ function addLinks(toName, fromName){
 function addApp(appName, serverArray){
   $(".removeSingleNodes").css("display", 'inline')
 
+
+
   //push the application node to the view
   var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}
   nodes.push(appNode);
