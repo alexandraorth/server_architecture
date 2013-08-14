@@ -1,6 +1,5 @@
 ## Server Overview
 
-![x](https://raw.github.com/alexandraorth/server_architecture/master/public/screenshot.png)
 ![x](https://raw.github.com/alexandraorth/server_architecture/master/public/screenshot2.png)
 
 This "Pod Architecture" app was built to show the communications between servers and applications within an AppFirst pod.
@@ -22,17 +21,23 @@ Make sure you have ruby and mongodb installed. The easiest way to do this on osx
 
 ## To Populate Database (api calls)
 
-#localhost:4567/api/appfirst
+###localhost:4567/api/appfirst
 
 This API call will store all of the topology data from the last collector upload in the database. 
 
 This is the only API call that should be made more than once, and the one that should be automated if this system is ever used permanently.
 
-#localhost:4567/api/appfirstApplication
+###localhost:4567/api/appfirstApplication
 
 Make this API call once to populate the database with information about the applicaitons in your pod. If you wish to update this data, please empty the "application" collection in your database first. 
 
-#localhost:4567/api/appfirstServerSets
+###localhost:4567/api/appfirstServerSets
 
 Make this API call once to populate the database with information about the server sets in your pod. If you wish to update this data, please empty the "Serverset" collection in your database first. 
 
+
+
+![x](https://raw.github.com/alexandraorth/server_architecture/master/public/screenshot.png)
+
+
+Please take a look at my first application from the summer, AppFirst Alerting, [here](https://github.com/appfirst/automated_alerting_app). 
