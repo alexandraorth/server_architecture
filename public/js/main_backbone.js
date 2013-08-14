@@ -109,26 +109,32 @@ var View = Backbone.View.extend({
     this.render();
   },
   render: function(){
-    var self = this;
-    var length = main_collection.length
+    self = this;
+
+    populateApplications();
+    populateServersets();
 
     $(function(){
       $("#slider-horizontal").slider({
         orientation: 'horizontal',
-        range: 'min',
+        range: 'max',
         min: 0,
         max: 100,
+        value: 100,
         slide: self.updateSlider
       });
-    })
+    });
 
+    fetch.done(function(){
+      update(100);
+    })
   },
   freeze: function(){ //Will stop the "force on the graph"
-    if(frozen == true){
+    if(frozen){
       frozen = false;
       force.start();
     }
-    else if(frozen == false){
+    else if(!frozen){
       frozen = true;
       force.stop();
     }
@@ -144,7 +150,7 @@ var View = Backbone.View.extend({
     //if you want to show servers
     else{
       $('.removeSingleNodes').attr('check', 'false');
-      show("block")
+      show("block");
     }
 
     restart();
@@ -152,10 +158,7 @@ var View = Backbone.View.extend({
   },
   clear: function(){
     removeSelected(); 
-    $(".removeSingleNodes").css("display", 'none')
-
-    console.log("clear was called")
-
+    $(".removeSingleNodes").css("display", 'none');
     for(var i = nodes.length - 1; i >= 0; i--){
       remove(nodes[i].name)
     }
@@ -164,27 +167,18 @@ var View = Backbone.View.extend({
   updateSlider: function(event, ui){
     if(nodes.length != 0){
       if(confirm("Changing the time will reset your nodes. Is this ok?")){
-        nodes = []
-        links = []
-        restart();
-        update();
+        view.clear();
+        update(ui.value);
       }
       else{
-        $("#slider-vertical a").removeClass("ui-state-focus ui-state-active ui-state-hover")
+        $("#slider-horizontal a").removeClass("ui-state-active");
+        $("#slider-horizontal a").removeClass("ui-state-focus");
+        $("#slider-horizontal a").removeClass("ui-state-hover");
       }
     }    
     else{
-      update();
+      update(ui.value);
     }
-
-    function update(){
-      var i = (ui.value/100)*main_collection.length
-      i = Math.ceil(i)
-
-      var currentModel = main_collection.models[i]
-      click(currentModel.get("_id"), currentModel.get("time"))
-    }
-
   },
 
   // Will toggle if the button has been selected or not
@@ -192,39 +186,37 @@ var View = Backbone.View.extend({
   // If not selected, will select, add node, fetch it's connections
   // and add it's connections
   nodeButtonClick: function(e){
-    current = $(e.currentTarget)
+    current = $(e.currentTarget);
 
-    console.log("node button was clicked")
-
-    var time_id = current.data("timeid") // get id of current button
-    var name = current.data("name") //get current hostname
+    var time_id = current.data("timeid"); // get id of current button
+    var name = current.data("name"); //get current hostname
 
     //toggle selected
     current.toggleClass('selected');
 
     //if the node has been selected
     if(current.hasClass('selected') == true){
-    	findAddEdges(time_id, name)
+    	findAddEdges(time_id, name);
     }
     // if the node is not selected
     else{
-      remove(name)
+      remove(name);
       restart();
     };
   },
   appButtonClick: function(e){
-    current = $(e.currentTarget)
+    current = $(e.currentTarget);
     current.toggleClass('selected');
 
-    applicationName = current.data("name")
+    applicationName = current.data("name");
 
     //if the node has been selected
     if(current.hasClass('selected') == true){
-      addApp(applicationName, getArray(applicationName))
+      addApp(applicationName, getArray(applicationName));
     }
     // if the node is not selected
     else{
-      removeApp(applicationName, getArray(applicationName))
+      removeApp(applicationName, getArray(applicationName));
       restart();
     };
   },
@@ -242,19 +234,13 @@ var View = Backbone.View.extend({
       }
     });
 
-    console.log(array)
-
     array.forEach(function(app){
-      console.log(app)
       var applicationNameArray = applicationCollection.where({app_id: app});
-
       applicationName = applicationNameArray[0].get("name")
-      console.log(applicationName)
 
-      var holder = getArray(applicationName)
+      var holder = getArray(applicationName);
 
-      addApp(applicationName, holder)
-
+      addApp(applicationName, holder);
     });
   }
 });
@@ -264,6 +250,15 @@ var View = Backbone.View.extend({
 // HELPER FUNCTIONS
 // ==========================
 
+function update(value){
+  var i = (value/100)*(main_collection.length-1);
+  i = Math.ceil(i);
+
+  var currentModel = main_collection.models[i];
+  click(currentModel.get("_id"), currentModel.get("time"));
+}
+
+//finds application and returns an array of the servers in that application
 function getArray(appName){
 
     var serverArray;
@@ -271,19 +266,20 @@ function getArray(appName){
 
     applicationCollection.forEach(function(application){
       if(application.get("name") == applicationName){
-        serverArray = application.get("server_ids")
+        serverArray = application.get("server_ids");
       }
     })
 
     serverArray.forEach(function(d, index){
-      var current = nodesCollection.where({server_id: d})
+      var current = nodesCollection.where({server_id: d});
       if(current.length > 0)
         array[index] = current[0].get("hostname");
     })
 
-    return array
-}
+    return array;
+};
 
+//renders the server buttons for a particular time
 function click(e, f){
   var collectionID = e;
 
@@ -292,38 +288,38 @@ function click(e, f){
 
   getNodes.done(function(){
 
-    $('#server-container .list-group li').remove()
+    $('#server-container .list-group li').remove();
 
     nodesCollection.forEach(function(node){
       $(this.el).append("This is the hostname " + node.get('hostname'));
       $('#server-container .list-group').append("<li><a href='#' class='list-group-item nodeButton' data-name='"
-        + node.get('hostname') + "' data-timeid='" + node.get('timemodel_id') + "'>" + node.get('hostname') + "</a></li>");
+        + node.get('hostname') + "' data-timeid='" + node.get('snapshot_id') + "'>" + node.get('hostname') + "</a></li>");
     });
   
     var currentTime = new Date(1000*f);
 
-    $('.time').text("Time: " + currentTime)
-    $('.time').data("time_id" , {first: collectionID})
-
+    $('.time').text("Time: " + currentTime);
+    $('.time').data("time_id" , {first: collectionID});
    });
 }
 
+//removes the "blue" coloring for selcted servers/apps
 function removeSelected(){
   $(".nodeButton").each(function(){
     if($(this).attr("class")){
-      $(this).removeClass("selected")
+      $(this).removeClass("selected");
     }
   })
 
   $(".appButton").each(function(target){
     if($(this).attr("class")){
-      $(this).removeClass("selected")
+      $(this).removeClass("selected");
     }
-  })
+  });
 }
 
+//will show or hide any server nodes and links to those nodes
 function show(display){
-
   //go through each node
   $('.node').each(function(target){
     //to find if it is a server
@@ -331,7 +327,7 @@ function show(display){
       $(this).css("display", display);
 
         //save reference to the node, os you can test for location
-        var holder = this
+        var holder = this;
 
           //hide any links that have a starting point in the same location as the node
           $('.link').each(function(line){
@@ -340,7 +336,7 @@ function show(display){
               ||
               $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] ==
               $(this).attr("x2")){
-              $(this).css("display", display)
+              $(this).css("display", display);
           }
         });
     }
@@ -352,18 +348,19 @@ function findAddEdges(time_id, name){
   add(name);
 
   //fetch its connections
-  var edgeCollection = new EdgeCollection([],{id: time_id, node_name: name })
-  getEdge = edgeCollection.fetch()
-  getEdge.done(function(){
+  var edgeCollection = new EdgeCollection([],{id: time_id, node_name: name });
+  getEdge = edgeCollection.fetch();
 
+  getEdge.done(function(){
   	edgeCollection.forEach(function(edge){
 
           //add its connections
-          if(edge.get('toID') === name)
-          	add(edge.get('fromID'), edge.get('toID'))
-          else if(edge.get('fromID') === name)
-          	add(edge.get('toID'), edge.get('fromID'))
-
+          if(edge.get('toID') === name){
+          	add(edge.get('fromID'), edge.get('toID'));
+          }
+          else if(edge.get('fromID') === name){
+          	add(edge.get('toID'), edge.get('fromID'));
+          }
       });
   });
 }
@@ -375,7 +372,7 @@ function populateApplications(){
 
     getApps.done(function(){
 
-      $('#application-container .list-group li').remove()
+      $('#application-container .list-group li').remove();
 
       applicationCollection.forEach(function(application){
         $('#application-container .list-group').append("<li><a href='#' class='list-group-item appButton' data-name='"+ 
@@ -404,41 +401,36 @@ function populateServersets(){
 main_collection = new TimeCollection();
 var fetch = main_collection.fetch({update: true, merge: false, remove: false, add: true});
 
-view = new View()
-
-populateApplications();
-populateServersets();
-
-
+view = new View();
 
 // ==========================
-// CSS/STYLES
+// CHANGING CSS/STYLES
 // ==========================
 
 
 $(".application-menu").click(function(){
-  $(".server-menu").parent().css("background-color", 'white')
-  $(".application-menu").parent().css("background-color", "#D9EDF7")
-  $("#server-container").css("display", "none")
-  $("#application-container").css("display", "block")
-  $(".app-menu-text-box").css("display", "block")
-  $(".server-menu-text-box").css("display", "none")
-})
+  $(".server-menu").parent().css("background-color", 'white');
+  $(".application-menu").parent().css("background-color", "#D9EDF7");
+  $("#server-container").css("display", "none");
+  $("#application-container").css("display", "block");
+  $(".app-menu-text-box").css("display", "block");
+  $(".server-menu-text-box").css("display", "none");
+});
 
 $(".server-menu").click(function(){
-  $(".server-menu").parent().css("background-color", '#D9EDF7')
-  $(".application-menu").parent().css("background-color", "white")
-  $("#application-container").css("display", "none")
-  $("#server-container").css("display", "block")
-  $(".app-menu-text-box").css("display", "none")
-  $(".server-menu-text-box").css("display", "block")
-})
+  $(".server-menu").parent().css("background-color", '#D9EDF7');
+  $(".application-menu").parent().css("background-color", "white");
+  $("#application-container").css("display", "none");
+  $("#server-container").css("display", "block");
+  $(".app-menu-text-box").css("display", "none");
+  $(".server-menu-text-box").css("display", "block");
+});
 
-  $(".server-menu").parent().css("background-color", '#D9EDF7')
-  $(".removeSingleNodes").css("display", 'none')
+$(".server-menu").parent().css("background-color", '#D9EDF7');
+$(".removeSingleNodes").css("display", 'none');
 
 
 $(function(){
   $('#search_input').fastLiveFilter('#search_list');
   $('#app_search_input').fastLiveFilter('#app_search_list');
-})
+});

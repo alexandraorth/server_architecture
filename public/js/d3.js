@@ -4,16 +4,16 @@
 
 
 //dynamic heights and widths based on window size
-width = $("#container").width()
-height = $("#container").width()
+width = $("#container").width();
+height = $("#container").width();
 
 d3.select(window)
   .on("resize", sizeChange);
 
 function sizeChange() {
-  width = $("#container").width()
-  height = $("#container").width()
-  d3.layout.force().size([width, height])
+  width = $("#container").width();
+  height = $("#container").width();
+  d3.layout.force().size([width, height]);
 }
 
 // ==========================
@@ -34,7 +34,7 @@ var svg = d3.select("#container")
     .append("svg")
     .append("g")
     .attr("class", "svg-container")
-    .on("mousemove", mousemove)
+    .on("mousemove", mousemove);
 
 var nodes = force.nodes(),
     links = force.links(),
@@ -54,7 +54,7 @@ var node_drag = d3.behavior.drag()
 //following three functions dragstart, dragmove and dragend
 // will allow nodes to be "held" in place when you click them
 function dragstart(d, i) {
-  force.stop() // stops the force auto positioning before you start dragging
+  force.stop(); // stops the force auto positioning before you start dragging
 }
 
 function dragmove(d, i) {
@@ -80,7 +80,7 @@ function dragend(d, i) {
 //if the node exists and the taget exists, adds only the connection
 function add(nodeName, connection){
   var bool = new Boolean(); // boolean 
-  bool = false
+  bool = false;
 
   //test to see if the node exists as a server or within an application
   nodes.forEach(function(target) {
@@ -109,10 +109,8 @@ function add(nodeName, connection){
 
     restart();    
   }
-  else if(bool == true){ //even if you don't add the node, you want to add new links on that node
-
+  else if(bool == true){ //even if you don't add the node, you want to add new links on that nodex
     addLinks(nodeName, connection);
-
     restart();
   };
 }
@@ -137,12 +135,10 @@ function addLinks(toName, fromName){
 }
 
 function addApp(appName, serverArray){
-  $(".removeSingleNodes").css("display", 'inline')
-
-
+  $(".removeSingleNodes").css("display", 'inline');
 
   //push the application node to the view
-  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray}
+  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray};
   nodes.push(appNode);
   restart();
 
@@ -155,15 +151,15 @@ function addApp(appName, serverArray){
   	nodes.forEach(function(target){
       //if that server exists, remove it from "toAdd" as it does not need to be added to the view
       if(server == target.name){
-      	toAdd.splice(i,1)          	
+      	toAdd.splice(i,1);
       }
     });
   };
 
   //add all of the nodes in this application that are not in the view
   toAdd.forEach(function(d){
-    var time_id = $('.time').data("time_id").first
-  	findAddEdges(time_id, d)
+    var time_id = $('.time').data("time_id").first;
+  	findAddEdges(time_id, d);
   });
 
   //Timeout so that links are not added before all nodes exist
@@ -179,15 +175,15 @@ function addApp(appName, serverArray){
     });
 
     for(var i = links.length -1; i >= 0; i--){
-      line = links[i]
+      line = links[i];
 
       serverArray.forEach(function(server){
         if(line != null && line.source.name == server){
-          addLinks(appNode.name, line.target.name)
+          addLinks(appNode.name, line.target.name);
           removeLink(line.source.name, line.target.name);           
         }
         else if(line != null && line.target.name == server){
-          addLinks(appNode.name, line.source.name)
+          addLinks(appNode.name, line.source.name);
           removeLink(line.source.name, line.target.name);
         }
       });
@@ -200,7 +196,7 @@ function addApp(appName, serverArray){
 function removeLink(toNode, fromNode){
   //Iterate in reverse
   for(var i = links.length -1; i >= 0; i--){
-    line = links[i]
+    line = links[i];
     if(toNode == line.source.name && fromNode == line.target.name){
       links.splice(i,1);
     }
@@ -227,7 +223,7 @@ function remove(nodeName){
   //that is, all of the links that you have already checked.
   //This is also the reason a forEach was not used
   for(var i = links.length -1; i >= 0; i--){
-    line = links[i]
+    line = links[i];
 
     if(line.source.name == nodeName){
       links.splice(i, 1);
@@ -255,19 +251,19 @@ function removeNode(nodeName){
   });
 
   if(appPresent == false){
-    $(".removeSingleNodes").css("display", 'none')
+    $(".removeSingleNodes").css("display", 'none');
   }
 
   restart();
 }
 
 function removeApp(appName, serverArray){
-  remove(appName)
+  remove(appName);
 
   $.each(serverArray, function(d){
-   var time_id = $('.time').data("time_id").first
+   var time_id = $('.time').data("time_id").first;
 
-    findAddEdges(time_id, d)
+    findAddEdges(time_id, d);
   });
 }
 
@@ -283,10 +279,10 @@ function tick() {
 
   rect.attr("transform", function(d) { 
     if (d.type == "app"){
-      return "translate(" + Math.max(13, Math.min(width - 13, d.x)) + "," + Math.max(13, Math.min(height - 13, d.y)) + ")"
+      return "translate(" + Math.max(13, Math.min(width - 13, d.x)) + "," + Math.max(13, Math.min(height - 13, d.y)) + ")";
     }
     else if(d.type == "node"){
-      return "translate(" + Math.max(8, Math.min(width - 8, d.x)) + "," + Math.max(8, Math.min(height - 8, d.y)) + ")"
+      return "translate(" + Math.max(8, Math.min(width - 8, d.x)) + "," + Math.max(8, Math.min(height - 8, d.y)) + ")";
     }
   });
 }
@@ -300,7 +296,7 @@ function mousemove() {
 function mouseover(){
   //fade out everything else
   $('.node').each(function(node){
-    d3.select(this).select("text").attr("opacity", ".5")
+    d3.select(this).select("text").attr("opacity", ".5");
   })
   $('.link').each(function(line){
     $(this).css("opacity", ".5");
@@ -309,28 +305,28 @@ function mouseover(){
 
   //make current node and links more prominent
   d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
-  d3.select(this).select("text").attr("opacity", "1")
+  d3.select(this).select("text").attr("opacity", "1");
 
 
   holder = this;
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
       $(this).css("opacity", "1");
-      $(this).css("stroke-width", "3").css("stroke", "#9ecae1")
+      $(this).css("stroke-width", "3").css("stroke", "#9ecae1");
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
       $(this).css("opacity", "1");
-      $(this).css("stroke-width", "3").css("stroke", "#9ecae1")
+      $(this).css("stroke-width", "3").css("stroke", "#9ecae1");
     }
   });
 }
 
 // handle de-highlighting of nodes, links and neighbors
 function mouseout(){
-  d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1")
+  d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1");
 
   $('.node').each(function(node){
-    d3.select(this).select("text").attr("opacity", "1")
+    d3.select(this).select("text").attr("opacity", "1");
   })
   $('.link').each(function(line){
     $(this).css("opacity", "1");
@@ -345,7 +341,7 @@ function restart() {
 
   link.enter().insert("line", ".node").attr("class", "link");
 
-  rect = rect.data(nodes, function(d){return d.name})
+  rect = rect.data(nodes, function(d){return d.name});
 
   rect.exit().remove();
 
