@@ -84,12 +84,10 @@ function add(nodeName, connection){
 
   //test to see if the node exists as a server or within an application
   nodes.forEach(function(target) {
-    if(target.type == "node"){
       if(target.name == nodeName){
         bool = true;
-      }
-    }
-  });
+      };
+    });
 
   //if the node does not exist
   if(bool == false){ 
@@ -111,18 +109,31 @@ function addLinks(toName, fromName){
   var from = null,
     to = null;
 
-  nodes.forEach(function(target){
-    if (target.name == toName){
-      to = target;
+  var bool = new Boolean(); // boolean 
+  bool = false;
+
+  //test to see if the node exists as a server or within an application
+  links.forEach(function(line) {
+    if(line.target.name == toName && line.source.name == fromName ||
+      line.target.name == fromName && line.source.name == toName){
+      bool = true;
     }
-    else if(target.name == fromName){
-      from = target;
-    };
   });
 
-  if(from != null && to != null){
-    links.push({source: from, target: to});
-  };
+  if(bool == false){
+    nodes.forEach(function(target){
+      if (target.name == toName){
+        to = target;
+      }
+      else if(target.name == fromName){
+        from = target;
+      };
+    });
+
+    if(from != null && to != null){
+      links.push({source: from, target: to});
+    };
+  }
 }
 
 function addApp(appName, serverArray){
@@ -156,6 +167,8 @@ function addApp(appName, serverArray){
   //Timeout so that links are not added before all nodes exist
   setTimeout(function(){
 
+    console.log(serverArray)
+
     //Remove all of the server nodes in the application to make room for the application node
     serverArray.forEach(function(server, index){
       nodes.forEach(function(target){
@@ -164,17 +177,13 @@ function addApp(appName, serverArray){
         };
 
 
+        console.log("went into this is")
         if (target.type == "app") {
-          // console.log("this is the app array turned into a string")
-          // console.log(target.nodesContained.join());
           var arrayAsString = target.nodesContained.join();
 
-          // console.log(server);
-          // console.log(target.name);
-          // console.log(arrayAsString);
-
-          if(server.indexOf(arrayAsString) > 0){
-            console.log(server.name + " is in " + target.name);
+          if(arrayAsString.indexOf(server) > -1){
+            console.log(server + " is in " + target.name);
+            addLinks(target.name, appName);
           }
         };
       });
