@@ -166,9 +166,6 @@ function addApp(appName, serverArray){
 
   //Timeout so that links are not added before all nodes exist
   setTimeout(function(){
-
-    console.log(serverArray)
-
     //Remove all of the server nodes in the application to make room for the application node
     serverArray.forEach(function(server, index){
       nodes.forEach(function(target){
@@ -176,18 +173,14 @@ function addApp(appName, serverArray){
           removeNode(target.name);
         };
 
-
-        console.log("went into this is")
         if (target.type == "app") {
           var arrayAsString = target.nodesContained.join();
 
           if(arrayAsString.indexOf(server) > -1){
-            console.log(server + " is in " + target.name);
             addLinks(target.name, appName);
           }
         };
       });
-
 
       for(var i = links.length -1; i >= 0; i--){
         line = links[i];
@@ -292,7 +285,7 @@ function tick() {
 
   rect.attr("transform", function(d) { 
     if (d.type == "app"){
-      return "translate(" + Math.max(13, Math.min(width - 13, d.x)) + "," + Math.max(13, Math.min(height - 13, d.y)) + ")";
+      return "translate(" + Math.max(11, Math.min(width - 11, d.x)) + "," + Math.max(11, Math.min(height - 11, d.y)) + ")";
     }
     else if(d.type == "node"){
       return "translate(" + Math.max(8, Math.min(width - 8, d.x)) + "," + Math.max(8, Math.min(height - 8, d.y)) + ")";
@@ -320,16 +313,15 @@ function mouseover(){
   d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
   d3.select(this).select("text").attr("opacity", "1");
 
-
   holder = this;
   $('.link').each(function(line){
     if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
       $(this).css("opacity", "1");
-      $(this).css("stroke-width", "3").css("stroke", "#9ecae1");
+      $(this).css("stroke-width", "2").css("stroke", "black").css("opacity", .8);
     }
     else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
       $(this).css("opacity", "1");
-      $(this).css("stroke-width", "3").css("stroke", "#9ecae1");
+      $(this).css("stroke-width", "2").css("stroke", "black").css("opacity", .8);
     }
   });
 }
@@ -343,7 +335,7 @@ function mouseout(){
   })
   $('.link').each(function(line){
     $(this).css("opacity", "1");
-    $(this).css("stroke-width", "1").css("stroke", "#9ecae1");
+    $(this).css("stroke-width", "1").css("stroke", "#9ecae1").css("opacity", 1);
   });
 }
 
@@ -391,17 +383,16 @@ function restart() {
     .on("mouseout", mouseout);
 
     g.append("svg:circle", ".cursor")
-    .attr("r", 13)
+    .attr("r", 11)
     .attr("fill", "#D9EDF7");
 
     g.append("svg:text")
     .attr("x", 10)
     .attr("dy", ".31em")
     .text(function(target){
-      return target.name;
-    })
-
-  }
+      return target.name.split(/\(.*?\)/)[0];
+    });
+  };
   force.start();
 }
 

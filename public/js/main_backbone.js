@@ -120,13 +120,13 @@ var View = Backbone.View.extend({
         range: 'max',
         min: 0,
         max: 100,
-        value: 100,
+        value: 0,
         slide: self.updateSlider
       });
     });
 
     fetch.done(function(){
-      update(100);
+      update(0);
     })
   },
   freeze: function(){ //Will stop the "force on the graph"
@@ -175,6 +175,7 @@ var View = Backbone.View.extend({
         $("#slider-horizontal a").removeClass("ui-state-active");
         $("#slider-horizontal a").removeClass("ui-state-focus");
         $("#slider-horizontal a").removeClass("ui-state-hover");
+        $("#slider-horizontal a").removeClass("ui-selected");
       }
     }    
     else{
@@ -192,7 +193,7 @@ var View = Backbone.View.extend({
     var time_id = current.data("timeid"); // get id of current button
     var name = current.data("name"); //get current hostname
 
-    //toggle selected
+    //toggle selected?
     current.toggleClass('selected');
 
     //if the node has been selected
@@ -222,7 +223,6 @@ var View = Backbone.View.extend({
     };
   },
   setButtonClick: function(e){
-    // view.clear();
     current = $(e.currentTarget);
     setName = current.data("name");
 
@@ -252,11 +252,11 @@ var View = Backbone.View.extend({
 
 function update(value){
   var i = (value/100)*(main_collection.length-1);
-  i = Math.ceil(i);
+  i = main_collection.length - 1 - Math.ceil(i);
 
   var currentModel = main_collection.models[i];
   click(currentModel.get("_id"), currentModel.get("time"));
-}
+};
 
 //finds application and returns an array of the servers in that application
 function getArray(appName){
