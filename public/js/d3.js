@@ -299,13 +299,18 @@ function mousemove() {
 }
 
 //handle highlighting of nodes, links, and neighbors
-function mouseover(){
+function mouseover(d){
+  if($(this).children()[0].r.animVal.value > 8){
+    $('.contained_servers_box').text(d.nodesContained.join().replace(/,/g, '\n'));
+  }
+
   //fade out everything else
   $('.node').each(function(node){
-    d3.select(this).select("text").attr("opacity", ".5");
+    d3.select(this).select("circle").attr("opacity", ".6");
+    d3.select(this).select("text").attr("opacity", ".3");
   })
   $('.link').each(function(line){
-    $(this).css("opacity", ".5");
+    $(this).css("opacity", ".3");
   });
 
   //make current node and links more prominent
@@ -332,14 +337,13 @@ function mouseover(){
       d3.select(this).select("text").attr("opacity", "1");
     };
   });
-
-  console.log(toHighlight)
 }
 
 // handle de-highlighting of nodes, links and neighbors
 function mouseout(){
+  $('.contained_servers_box').empty();
   $('.node').each(function(node){
-    d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1");
+    d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1").attr("opacity", "1");
     d3.select(this).select("text").attr("opacity", "1");
   })
   $('.link').each(function(line){

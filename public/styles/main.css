@@ -138,8 +138,6 @@
 /*  text-align: left;
 */}
 
-
-
 svg{
   display: block;
   width: 100%;
@@ -153,12 +151,19 @@ svg{
   z-index: 21;
 }
 
+.node :hover{
+  overflow: visible;
+}
+
 .node text{
+  background-color: white;
   position: absolute;
   fill: black;
   font-size: 12;
   color: black;
   z-index: 5;
+  width: 10px;
+  overflow: hidden;
   top: 50px;
 }
 
@@ -175,4 +180,11 @@ svg{
 
 circle{
   z-index: 20;
+}
+
+.contained_servers_box{
+  position: absolute;
+  height: 300px;
+  width: 200px;
+  right: 5%;
 }
