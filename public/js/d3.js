@@ -308,21 +308,28 @@ function mouseover(){
     $(this).css("opacity", ".5");
   });
 
-
   //make current node and links more prominent
   d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
   d3.select(this).select("text").attr("opacity", "1");
 
+  server_name = $(this).children().text();
+  var toHighlight = new Array();
+  //highlight links
   holder = this;
   $('.link').each(function(line){
-    if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") ){
+    if(($(this).attr('class')).indexOf(server_name) > -1){
+      toHighlight.push($(this).attr('class'))
       $(this).css("opacity", "1");
       $(this).css("stroke-width", "2").css("stroke", "black").css("opacity", .8);
-    }
-    else if( $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
-      $(this).css("opacity", "1");
-      $(this).css("stroke-width", "2").css("stroke", "black").css("opacity", .8);
-    }
+    };
+  });
+
+  toHighlight = toHighlight.join()
+  $('.node').each(function(){
+    if(toHighlight.indexOf($(this).children().text()) > -1){
+      d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
+      d3.select(this).select("text").attr("opacity", "1");
+    };
   });
 }
 
@@ -344,7 +351,9 @@ function restart() {
 
   link.exit().remove();
 
-  link.enter().insert("line", ".node").attr("class", "link");
+  link.enter().insert("line", ".node").attr("class", function(line){
+    return line.source.name + " link " + line.target.name;
+  });
 
   rect = rect.data(nodes, function(d){return d.name});
 

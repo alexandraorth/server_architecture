@@ -175,7 +175,7 @@ var View = Backbone.View.extend({
         $("#slider-horizontal a").removeClass("ui-state-active");
         $("#slider-horizontal a").removeClass("ui-state-focus");
         $("#slider-horizontal a").removeClass("ui-state-hover");
-        $("#slider-horizontal a").removeClass("ui-selected");
+        $("#slider-horizontal a").removeClass("selected");
       }
     }    
     else{
@@ -197,7 +197,7 @@ var View = Backbone.View.extend({
     current.toggleClass('selected');
 
     //if the node has been selected
-    if(current.hasClass('selected') == true){
+    if(current.hasClass('selected')){
     	findAddEdges(time_id, name);
     }
     // if the node is not selected
@@ -213,7 +213,7 @@ var View = Backbone.View.extend({
     applicationName = current.data("name");
 
     //if the node has been selected
-    if(current.hasClass('selected') == true){
+    if(current.hasClass('selected')){
       addApp(applicationName, getArray(applicationName));
     }
     // if the node is not selected
