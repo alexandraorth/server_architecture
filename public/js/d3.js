@@ -186,12 +186,12 @@ function addApp(appName, serverArray){
         line = links[i];
 
         if(line != null && line.source.name == server){
-          addLinks(appNode.name, line.target.name);
           links.splice(i,1)
+          addLinks(appNode.name, line.target.name);
         }
         else if(line != null && line.target.name == server){
-          addLinks(appNode.name, line.source.name);
           links.splice(i,1)
+          addLinks(appNode.name, line.source.name);
         };
       };
     });
@@ -309,7 +309,7 @@ function mouseover(){
   });
 
   //make current node and links more prominent
-  d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
+  d3.select(this).select("circle").attr("stroke", "#4ACFFF").attr("stroke-width", 2).attr("opacity", "1");
   d3.select(this).select("text").attr("opacity", "1");
 
   server_name = $(this).children().text();
@@ -317,27 +317,29 @@ function mouseover(){
   //highlight links
   holder = this;
   $('.link').each(function(line){
-    if(($(this).attr('class')).indexOf(server_name) > -1){
-      toHighlight.push($(this).attr('class'))
+    if($(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x1") 
+      || $(holder).attr("transform").split(/\((.*?)\)/g)[1].split(",")[0] == $(this).attr("x2")){
       $(this).css("opacity", "1");
-      $(this).css("stroke-width", "2").css("stroke", "black").css("opacity", .8);
+      $(this).css("stroke-width", "2").css("stroke", "#4ACFFF").css("opacity", .8);
+      toHighlight.push($(this).attr('class'))
     };
   });
 
   toHighlight = toHighlight.join()
   $('.node').each(function(){
-    if(toHighlight.indexOf($(this).children().text()) > -1){
-      d3.select(this).select("circle").attr("stroke", "#000000").attr("opacity", "1");
+    if(toHighlight.indexOf($(this).children().text().split(/\(.*?\)/)[0]) > -1){
+      d3.select(this).select("circle").attr("stroke", "#4ACFFF").attr("stroke-width", 2).attr("opacity", "1");
       d3.select(this).select("text").attr("opacity", "1");
     };
   });
+
+  console.log(toHighlight)
 }
 
 // handle de-highlighting of nodes, links and neighbors
 function mouseout(){
-  d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1");
-
   $('.node').each(function(node){
+    d3.select(this).select("circle").attr("stroke", "black").attr("stroke-width", "1");
     d3.select(this).select("text").attr("opacity", "1");
   })
   $('.link').each(function(line){
@@ -352,7 +354,7 @@ function restart() {
   link.exit().remove();
 
   link.enter().insert("line", ".node").attr("class", function(line){
-    return line.source.name + " link " + line.target.name;
+    return line.source.name.split(/\(.*?\)/)[0] + " link " + line.target.name.split(/\(.*?\)/)[0];
   });
 
   rect = rect.data(nodes, function(d){return d.name});
@@ -377,7 +379,8 @@ function restart() {
     .attr("x", 10)
     .attr("dy", ".31em")
     .text(function(target){
-      return target.name;
+      // return (target.name).replace(/\s/);
+      return target.name
     })
   }
 
@@ -399,6 +402,7 @@ function restart() {
     .attr("x", 10)
     .attr("dy", ".31em")
     .text(function(target){
+      // return (target.name).replace(/ /g, '')
       return target.name.split(/\(.*?\)/)[0];
     });
   };
