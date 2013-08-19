@@ -94,6 +94,19 @@ function add(nodeName, connection){
     var node = {x: 500, y: 200, name: nodeName, type: "node"}, //push it to nodes
     n = nodes.push(node);
 
+    nodes.forEach(function(target){
+      if(target.type == "app") {
+        var arrayAsString = target.nodesContained.join();
+
+        console.log(arrayAsString)
+        console.log(nodeName)
+
+        if(arrayAsString.indexOf(nodeName) > -1){
+          addLinks(target.name, nodeName);
+        };
+      };
+    })
+
     addLinks(nodeName, connection); //add any links
 
     restart();    
