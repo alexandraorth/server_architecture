@@ -136,11 +136,11 @@ function addLinks(toName, fromName){
   }
 }
 
-function addApp(appName, serverArray){
+function addApp(appName, serverArray, set){
   $(".removeSingleNodes").css("display", 'inline');
 
   //push the application node to the view
-  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray};
+  var appNode = {x: 200, y: 200, name: appName, type: "app", nodesContained: serverArray, set: set};
   nodes.push(appNode);
   restart();
 
@@ -390,7 +390,6 @@ function restart() {
 
   //if adding an application, format it as an application
   else if(nodes[nodes.length -1].type == "app"){
-
     var g = rect.enter().append('svg:g');
 
     g.attr("class", "node")
@@ -400,7 +399,20 @@ function restart() {
 
     g.append("svg:circle", ".cursor")
     .attr("r", 11)
-    .attr("fill", "#D9EDF7");
+    .attr("fill", function(d){
+      if(d.set == 'Production.Backend.Hbase'){
+        console.log("went into red")
+        return "red";
+      }
+      else if(d.set == 'Production.Backend.Hadoop'){
+        console.log("went into blue")
+        return "blue";
+      }
+      else {
+        console.log("went into null")
+        return "#D9EDF7";
+      }
+    });
 
     g.append("svg:text")
     .attr("x", 10)
@@ -409,6 +421,7 @@ function restart() {
       // return (target.name).replace(/ /g, '')
       return target.name.split(/\(.*?\)/)[0];
     });
+
   };
   force.start();
 }

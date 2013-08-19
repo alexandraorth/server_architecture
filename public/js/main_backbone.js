@@ -214,7 +214,7 @@ var View = Backbone.View.extend({
 
     //if the node has been selected
     if(current.hasClass('selected')){
-      addApp(applicationName, getArray(applicationName));
+      addApp(applicationName, getArray(applicationName), null);
     }
     // if the node is not selected
     else{
@@ -240,7 +240,7 @@ var View = Backbone.View.extend({
 
       var holder = getArray(applicationName);
 
-      addApp(applicationName, holder);
+      addApp(applicationName, holder, setName);
     });
   }
 });
