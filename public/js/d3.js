@@ -146,6 +146,10 @@ function addLinks(toName, fromName){
     });
 
     if(from != null && to != null){
+      console.log("from")
+      console.log(from)
+      console.log("to")
+      console.log(to)
       links.push({source: from, target: to});
     };
   }
@@ -201,16 +205,26 @@ function addApp(appName, serverArray, set){
         line = links[i];
 
         if(line != null && line.source.name == server){
+          console.log("removed")
+          console.log(links[i])
           links.splice(i,1)
+          console.log("added")
+          console.log(appNode.name + "     " + line.target.name)
           addLinks(appNode.name, line.target.name);
         }
         else if(line != null && line.target.name == server){
+          console.log("removed")
+          console.log(links[i])
           links.splice(i,1)
-          addLinks(appNode.name, line.source.name);
+          console.log("added")
+          console.log(appNode.name + "     " + line.target.name)
+          addLinks(appNode.name, line.target.name);
         };
       };
     });
     restart();
+
+    console.log(links)
 
   }, 1000);
 }
@@ -345,6 +359,8 @@ function mouseover(d){
     };
   });
 
+  console.log(toHighlight)
+
   toHighlight = toHighlight.join()
   $('.node').each(function(){
     if(toHighlight.indexOf($(this).children().text().split(/\(.*?\)/)[0]) > -1){
@@ -372,8 +388,12 @@ function restart() {
 
   link.exit().remove();
 
-  link.enter().insert("line", ".node").attr("class", function(line){
-    return line.source.name.split(/\(.*?\)/)[0] + " link " + line.target.name.split(/\(.*?\)/)[0];
+  link.enter().insert("line", ".node")
+
+  link.attr("class", function(line){
+    return line.source.name + " link " + line.target.name;
+  }).on("mouseover", function(d){
+    console.log(d.source.name + " --> " + d.target.name);
   });
 
   rect = rect.data(nodes, function(d){return d.name});
@@ -414,20 +434,21 @@ function restart() {
 
     g.append("svg:circle", ".cursor")
     .attr("r", 11)
-    .attr("fill", function(d){
-      if(d.set == 'Production.Backend.Hbase'){
-        console.log("went into red")
-        return "red";
-      }
-      else if(d.set == 'Production.Backend.Hadoop'){
-        console.log("went into blue")
-        return "blue";
-      }
-      else {
-        console.log("went into null")
-        return "#D9EDF7";
-      }
-    });
+    .attr("fill", "#D9EDF7");
+    // .attr("fill", function(d){
+    //   if(d.set == 'Production.Backend.Hbase'){
+    //     console.log("went into red")
+    //     return "red";
+    //   }
+    //   else if(d.set == 'Production.Backend.Hadoop'){
+    //     console.log("went into blue")
+    //     return "blue";
+    //   }
+    //   else {
+    //     console.log("went into null")
+    //     return "#D9EDF7";
+    //   }
+    // });
 
     g.append("svg:text")
     .attr("x", 10)
