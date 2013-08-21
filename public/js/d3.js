@@ -82,36 +82,38 @@ function add(nodeName, connection){
   var bool = new Boolean(); // boolean 
   bool = false;
 
+  console.log("this is the node to add" + nodeName)
+
   //test to see if the node exists as a server or within an application
   nodes.forEach(function(target) {
-      if(target.name == nodeName){
-        bool = true;
-      };
-    });
+    if(target.name == nodeName){
+      bool = true;
+    };     
+
+    // if(target.type == "app") {
+    //   console.log("went into app")
+
+    //   var arrayAsString = target.nodesContained.join();
+    //   if(arrayAsString.indexOf(nodeName) > -1){
+    //    bool = null;   
+    //    addLinks(target.name, connection)  
+    //    console.log(target.name + " --> " + connection)   
+    //   };
+    // }; 
+  });
 
   //if the node does not exist
   if(bool == false){ 
     var node = {x: 500, y: 200, name: nodeName, type: "node"}, //push it to nodes
     n = nodes.push(node);
 
-    nodes.forEach(function(target){
-      if(target.type == "app") {
-        var arrayAsString = target.nodesContained.join();
-
-        console.log(arrayAsString)
-        console.log(nodeName)
-
-        if(arrayAsString.indexOf(nodeName) > -1){
-          addLinks(target.name, nodeName);
-        };
-      };
-    })
-
     addLinks(nodeName, connection); //add any links
 
     restart();    
   }
   else if(bool == true){ //even if you don't add the node, you want to add new links on that nodex
+    console.log("went into this else if")
+
     addLinks(nodeName, connection);
     restart();
   };
