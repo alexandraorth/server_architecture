@@ -167,16 +167,9 @@ var View = Backbone.View.extend({
   },
   updateSlider: function(event, ui){
     if(nodes.length != 0){
-      if(confirm("Changing the time will reset your nodes. Is this ok?")){
-        view.clear();
-        update(ui.value);
-      }
-      else{
-        $("#slider-horizontal a").removeClass("ui-state-active");
-        $("#slider-horizontal a").removeClass("ui-state-focus");
-        $("#slider-horizontal a").removeClass("ui-state-hover");
-        $("#slider-horizontal a").removeClass("selected");
-      }
+      alert("Warning. All nodes will be removed from the view due to the changing time.");
+      view.clear();
+      update(ui.value);
     }    
     else{
       update(ui.value);
